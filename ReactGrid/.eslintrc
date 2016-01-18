@@ -1,0 +1,29 @@
+﻿{
+  "extends": "google",
+  "parser": "babel-eslint",
+  "plugins": ["react"],
+  "ecmaFeatures": {
+    "jsx": true
+  },
+  "env": {
+    "browser": true
+  },
+  "rules": {
+    "linebreak-style": 0,
+    "indent": [ 2, 4 ],
+    "valid-jsdoc": 1,
+    "no-alert": 0,
+    "new-cap": 0,
+    "spaced-comment": 0,
+    "no-unused-expressions": 0,
+    "one-var": 0,
+    "no-undef": 0,
+    "camelcase": 0,
+    "padded-blocks": 0,
+    "eol-last": 0,
+    "no-trailing-spaces": 1
+  },
+  "globals": {
+    "$": true
+  }
+}
