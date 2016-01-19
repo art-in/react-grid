@@ -1,6 +1,8 @@
 ﻿import React from 'react'
 import Griddle from 'griddle-react'
 import {css} from '../../helpers/react-helpers'
+import $ from 'jquery'
+import ContextMenu from '../Menu/ContextMenu'
 
 @css({
     wrapper: {
@@ -23,7 +25,14 @@ export default class DataTable extends React.Component {
 
     state = {
         data: [],
-        columns: []
+        columns: [],
+        contextMenu: {
+            shown: false,
+            pos: {
+                x: null,
+                y: null
+            }
+        }
     };
 
     static propTypes = {
@@ -32,7 +41,6 @@ export default class DataTable extends React.Component {
     };
 
     onRowClick = (rowComponent, e) => {
-
         let row = rowComponent.props.data;
         let rowSelected = row.selected;
 
@@ -49,7 +57,28 @@ export default class DataTable extends React.Component {
 
     onBlur = () => {
         this.state.data.forEach(i => {delete i.selected});
+        this.state.contextMenu.shown = false;
         this.forceUpdate();
+    };
+
+    onContextMenu = (e) => {
+        // is header click?
+        let headerRow = $(e.target).closest('thead')[0];
+        if (headerRow) {
+            this.onBlur();
+            return;
+        }
+
+        // pass event to react component
+        // (no support for context menu event from griddle)
+        $(e.target).click();
+
+        // show context menu
+        let {contextMenu} = this.state;
+        contextMenu.shown = true;
+        contextMenu.pos = {x: e.clientX, y: e.clientY};
+
+        e.preventDefault();
     };
 
     componentWillReceiveProps(nextProps) {
@@ -67,8 +96,9 @@ export default class DataTable extends React.Component {
 
     render() {
         return (
-            <div className={this.classes.wrapper}
-                 tabIndex='0' onBlur={this.onBlur}>
+            <div className={this.classes.wrapper} tabIndex='0'
+                onBlur={this.onBlur}
+                onContextMenu={this.onContextMenu}>
 
                 <Griddle results={this.state.data}
                          columns={this.state.columns}
@@ -77,7 +107,9 @@ export default class DataTable extends React.Component {
                          useGriddleStyles={false}
                          onRowClick={this.onRowClick}
                          rowMetadata={this.rowMetadata} />
-
+            
+                {this.state.contextMenu.shown &&
+                    <ContextMenu pos={this.state.contextMenu.pos} />}
             </div>
         );
     }

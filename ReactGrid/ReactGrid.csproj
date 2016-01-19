@@ -110,6 +110,8 @@
     <Content Include="Scripts\components\App.js" />
     <Content Include="Scripts\boot.js" />
     <Content Include="Scripts\components\DataTable\DataTable.js" />
+    <Content Include="Scripts\components\Menu\ContextMenu.js" />
+    <Content Include="Scripts\components\Menu\MenuItem.js" />
     <Content Include="Scripts\helpers\react-helpers.js" />
     <Content Include="Web.config" />
   </ItemGroup>
