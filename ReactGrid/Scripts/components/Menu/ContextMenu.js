@@ -16,11 +16,22 @@ export default class ContextMenu extends React.Component {
     classes = this.props.sheet.classes;
 
     static propTypes = {
-        pos: React.PropTypes.object.isRequired
+        pos: React.PropTypes.object.isRequired,
+        menuItems: React.PropTypes.arrayOf(
+            React.PropTypes.shape({
+                title: React.PropTypes.string.isRequired,
+                onClick: React.PropTypes.func.isRequired
+            })).isRequired
     };
 
     render() {
-        let {pos} = this.props;
+        let {pos, menuItems} = this.props;
+
+        let menuItemComponents = menuItems.map(i => {
+            return (
+                <MenuItem key={i.title} title={i.title} onClick={i.onClick} />
+            );
+        })
 
         return (
             <div className={this.classes.menu}
@@ -28,9 +39,7 @@ export default class ContextMenu extends React.Component {
                     left: `${pos.x}px`,
                     top: `${pos.y}px`
                  }}>
-                <MenuItem title={'Item 1'} />
-                <MenuItem title={'Item 2'} />
-                <MenuItem title={'Item 3'} />
+                 {menuItemComponents}
             </div>    
         )
     }

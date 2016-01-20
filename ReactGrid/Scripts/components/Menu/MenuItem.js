@@ -14,12 +14,14 @@ export default class MenuItem extends React.Component {
     classes = this.props.sheet.classes;
 
     static propTypes = {
-        title: React.PropTypes.string.isRequired
+        title: React.PropTypes.string.isRequired,
+        onClick: React.PropTypes.func.isRequired
     };
 
     render() {
         return (
-            <div className={this.classes.item}>
+            <div className={this.classes.item}
+                 onClick={this.props.onClick}>
                 {this.props.title}
             </div>
         )

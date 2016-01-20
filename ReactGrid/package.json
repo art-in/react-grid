@@ -21,6 +21,7 @@
     "babel-preset-stage-0": "^6.3.13",
     "bootstrap": "^3.3.6",
     "bootstrap-webpack": "0.0.5",
+    "classnames": "^2.2.3",
     "css-loader": "^0.23.1",
     "del": "^2.2.0",
     "eslint": "^1.10.3",
