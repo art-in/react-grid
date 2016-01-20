@@ -1,6 +1,8 @@
  - [x] display table
  - [x] style with bootstrap
- - [x] rows selection (+ Ctrl)
- - [ ] context menu
+ - [ ] rows selection
+   * [x] one by one (+ ctrl)
+   * [ ] batch (+ shift)
+ - [x] context menu
  - [ ] cell editing (text, dropdown)
  
