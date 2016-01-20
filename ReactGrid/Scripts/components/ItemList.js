@@ -1,9 +1,15 @@
 ﻿import React from 'react'
-import ReactDOM from 'react-dom'
 import DataTable from './table/DataTable'
 import ContextMenu from './menu/ContextMenu'
 import $ from 'jquery'
+import {css} from '../helpers/react-helpers'
+import {alphabetSorter, numericSorter} from './table/sorters'
 
+@css({
+    list: {
+        outline: 'none'
+    }
+})
 export default class ItemList extends React.Component {
 
     static propTypes = {
@@ -22,6 +28,8 @@ export default class ItemList extends React.Component {
             targetItems: []
         }
     };
+
+    classes = this.props.sheet.classes;
 
     onFocus = e => {
         this.state.showItemSelection = true;
@@ -85,11 +93,19 @@ export default class ItemList extends React.Component {
 
         return (
             <div tabIndex='0'
+                 className={this.classes.list}
                  onFocus={this.onFocus}
                  onBlur={this.onBlur}>
 
                 <DataTable data={this.props.items}
-                           columns={['Id', 'Name']}
+                           columns={[{
+                               columnName: 'Id',
+                               cssClassName: 'col-md-3',
+                               initialSort: true
+                           }, {
+                               columnName: 'Name',
+                               cssClassName: 'col-md-9'
+                           }]}
                            showRowSelection={showItemSelection}
                            onRowSelected={this.onTableRowSelected}
                            onContextMenu={this.onTableContextMenu} />
