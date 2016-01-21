@@ -36,6 +36,12 @@ export default class ItemList extends React.Component {
     };
 
     onBlur = e => {
+        if (e.target !== this.refs.wrapper) {
+            // table nav buttons can throw 'blur' too
+            // interested in table wrapper 'blur' only
+            return;
+        }
+        
         this.state.showItemSelection = false;
         
         // hide context menu
@@ -95,12 +101,14 @@ export default class ItemList extends React.Component {
             <div tabIndex='0'
                  className={this.classes.list}
                  onFocus={this.onFocus}
-                 onBlur={this.onBlur}>
+                 onBlur={this.onBlur}
+                 ref='wrapper'>
 
                 <DataTable data={this.props.items}
                            columns={[{
                                columnName: 'Id',
                                cssClassName: 'col-md-3',
+                               sorter: numericSorter('Id'),
                                initialSort: true
                            }, {
                                columnName: 'Name',

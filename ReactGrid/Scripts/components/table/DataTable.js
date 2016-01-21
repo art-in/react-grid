@@ -114,16 +114,20 @@ export default class DataTable extends React.Component {
      */
     updatePageData(data, columnsMetadata, filterString, sortColumn, sortAscending, page, pageSize) {
        
-            // filter
-            if (filterString) {
-                throw Error('Filtering not implemented');
-                }
+        // filter
+        if (filterString) {
+            throw Error('Filtering not implemented');
+        }
 
         // sort
         let columnMetadata = columnsMetadata.find(c => c.columnName === sortColumn);
         let columnSorter = (columnMetadata && columnMetadata.sorter) || alphabetSorter(sortColumn);
 
-        // TODO: sorting does not work correctly when more 10 rows...
+        // in case pass wrong sorter func
+        if (columnSorter.length < 2) {
+            console.warn('column sorter consumes less arguments than required (a, b)!');
+        }
+
         data.sort(columnSorter);
 
         if(sortAscending === false) {
