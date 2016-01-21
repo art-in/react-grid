@@ -59,7 +59,12 @@ export default class DataTable extends React.Component {
         columns: React.PropTypes.array.isRequired,
         showRowSelection: React.PropTypes.bool.isRequired,
         onRowSelected: React.PropTypes.func.isRequired,
-        onContextMenu: React.PropTypes.func.isRequired
+        onContextMenu: React.PropTypes.func.isRequired,
+        paging: React.PropTypes.bool
+    };
+
+    static defaultProps = {
+        paging: true
     };
 
     state = {
@@ -79,6 +84,10 @@ export default class DataTable extends React.Component {
 
         if (!nextProps.showRowSelection) {
             nextProps.data.forEach(i => {delete i.selected});
+        }
+
+        if (!nextProps.paging) {
+            this.state.pageSize = +Infinity;
         }
         
         let sortColumnName = this.state.sortColumnName;
@@ -112,24 +121,24 @@ export default class DataTable extends React.Component {
 
         // sort
         let columnMetadata = columnsMetadata.find(c => c.columnName === sortColumn);
-            let columnSorter = (columnMetadata && columnMetadata.sorter) || alphabetSorter(sortColumn);
+        let columnSorter = (columnMetadata && columnMetadata.sorter) || alphabetSorter(sortColumn);
 
-                // TODO: sorting does not work correctly when more 10 rows...
-            data.sort(columnSorter);
+        // TODO: sorting does not work correctly when more 10 rows...
+        data.sort(columnSorter);
 
-            if(sortAscending === false) {
-                data.reverse();
-                }
+        if(sortAscending === false) {
+            data.reverse();
+        }
 
-            // page
-            let pagesCount = Math.round(
-            data.length > pageSize ?
-                Math.ceil(data.length / pageSize) : 1);
+        // page
+        let pagesCount = Math.round(
+        data.length > pageSize ?
+            Math.ceil(data.length / pageSize) : 1);
 
         if (pagesCount <= page) {
-                // go to last page is there is no rows on current one
+            // go to last page is there is no rows on current one
             page = pagesCount - 1;
-            }
+        }
 
         var startRowIdx = page === 0 ?
             0 :
@@ -149,7 +158,7 @@ export default class DataTable extends React.Component {
                 sortColumnName: sortColumn,
                 sortAscending: sortAscending
                 });
-            }
+    }
 
     onRowClick = (rowComponent, e) => {
         let row = rowComponent.props.data;
@@ -302,7 +311,7 @@ export default class DataTable extends React.Component {
                          rowMetadata={this.rowMetadata}
                          showFilter={false}
                          showSettings={false}
-                         showPager={true}
+                         showPager={this.props.paging}
                          
                          useExternal={true}
                          externalChangeSort={this.onChangeSort}
