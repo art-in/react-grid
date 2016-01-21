@@ -8,6 +8,14 @@ import {alphabetSorter} from './sorters'
 
 @css({
     table: {
+        '& thead th:hover': {
+            'cursor': 'pointer'
+        },
+        '& thead th[data-title=selected]': {
+            // hide strange 'selected' column header
+            // https://github.com/GriddleGriddle/Griddle/issues/323
+            'display': 'none'
+        },
         '& tbody tr:hover': {
             'background-color': '#f3f3f3',
             'cursor': 'pointer'
@@ -32,6 +40,15 @@ import {alphabetSorter} from './sorters'
                 'width': '60%',
                 'text-align': 'center'
             }
+        },
+        '& tbody tr': {
+            // disable selection (for batch selection with shift)
+            '-webkit-user-select': 'none',
+            '-khtml-user-select': 'none',
+            '-khtml-user-select': 'none',
+            '-moz-user-select': 'none',
+            '-ms-user-select': 'none',
+            'user-select': 'none'
         }
     }
 })
@@ -46,70 +63,97 @@ export default class DataTable extends React.Component {
     };
 
     state = {
-        results: [],
-        currentPage: 0,
-        maxPages: 0,
-        externalResultsPerPage: 5,
-        externalSortColumn: null,
-        externalSortAscending: true
+        data: [],
+        pageData: [],
+        pageCurrent: 0,
+        pageSize: 5,
+        pagesCount: 0,
+        sortColumnName: null,
+        sortAscending: true
     };
 
     classes = this.props.sheet.classes;
 
     componentWillReceiveProps(nextProps) {
-        let {data, columns} = nextProps;
+        this.state.data = nextProps.data;
 
         if (!nextProps.showRowSelection) {
-            data.forEach(i => {delete i.selected});
+            nextProps.data.forEach(i => {delete i.selected});
         }
         
-        let {externalResultsPerPage, currentPage, externalSortAscending} = this.state;
-        
-        // sort
-        let columnData = columns.find(c => c.initialSort);
-        let sortColumn;
-        if (columnData) {
-            sortColumn = columnData.columnName;
-            let sortedData = data.sort(columnData.sorter || alphabetSorter(sortColumn));
+        let sortColumnName = this.state.sortColumnName;
+        if (!sortColumnName) {
+            // get initial sort column
+            let columnData = nextProps.columns.find(c => c.initialSort);
+            if (columnData) {
+                sortColumnName = columnData.columnName;
+            }
+        }
 
-            if(externalSortAscending === false){
-                sortedData.reverse();
+        this.updatePageData(
+            this.state.data,
+            nextProps.columns,
+            null,
+            sortColumnName,
+            this.state.sortAscending,
+            this.state.pageCurrent,
+            this.state.pageSize);
+    }
+
+    /**
+     * Applies sorting and paging for the data.
+     */
+    updatePageData(data, columnsMetadata, filterString, sortColumn, sortAscending, page, pageSize) {
+       
+            // filter
+            if (filterString) {
+                throw Error('Filtering not implemented');
+                }
+
+        // sort
+        let columnMetadata = columnsMetadata.find(c => c.columnName === sortColumn);
+            let columnSorter = (columnMetadata && columnMetadata.sorter) || alphabetSorter(sortColumn);
+
+                // TODO: sorting does not work correctly when more 10 rows...
+            data.sort(columnSorter);
+
+            if(sortAscending === false) {
+                data.reverse();
+                }
+
+            // page
+            let pagesCount = Math.round(
+            data.length > pageSize ?
+                Math.ceil(data.length / pageSize) : 1);
+
+        if (pagesCount <= page) {
+                // go to last page is there is no rows on current one
+            page = pagesCount - 1;
             }
 
-            data = sortedData;
-        }
-
-        // page
-        var startRowIdx = currentPage === 0 ?
+        var startRowIdx = page === 0 ?
             0 :
-            currentPage * externalResultsPerPage;
-        
-        let pageRows = data.slice(startRowIdx,
-            startRowIdx + externalResultsPerPage > data.length ?
-                data.length : 
-                startRowIdx + externalResultsPerPage);
+            page * pageSize;
 
-        let pagesCount = Math.round(
-            data.length > externalResultsPerPage ?
-                data.length / externalResultsPerPage :
-                1);
+        let lastRowIdx = startRowIdx + pageSize > data.length ?
+                data.length : 
+                startRowIdx + pageSize;
+        
+        let pageRows = data.slice(startRowIdx, lastRowIdx);
 
         this.setState({
-            results: pageRows,
-            currentPage: currentPage,
-            maxPages: pagesCount,
-            externalSortColumn: sortColumn
-        });
-    }
-
-    componentWillMount() {
-        let {data} = this.props;
-    }
+                    pageData: pageRows,
+                    pageCurrent: page,
+                        pageSize: pageSize,
+                        pagesCount: pagesCount,
+                sortColumnName: sortColumn,
+                sortAscending: sortAscending
+                });
+            }
 
     onRowClick = (rowComponent, e) => {
         let row = rowComponent.props.data;
         
-        let {data} = this.props;
         let {contextMenu} = this.state;
 
         // show context menu
@@ -117,30 +161,50 @@ export default class DataTable extends React.Component {
             delete this.state.contextMenu;
 
             if (!row.selected) {
-                data.forEach(i => {delete i.selected});
+                this.state.data.forEach(i => {delete i.selected});
             }
 
             row.selected = true;
 
             // save target rows
-            let selectedRows = data.filter(row => row.selected);
+            let selectedRows = this.state.data.filter(row => row.selected);
             this.props.onContextMenu(contextMenu.pos, selectedRows)
 
-        // select row
+        // select rows
         } else {
-            let rowSelected = row.selected;
-
-            if (!e.ctrlKey) {
-                // de-select all the rows
-                data.forEach(i => {delete i.selected});
-            }
-
-            if (e.shiftKey) {
+            
+            // batch
+            let selectedRow = this.state.pageData.find(r => r.selected);
+            if (e.shiftKey && selectedRow) {
                 
-            }
+                let rowFromIdx = this.state.pageData.indexOf(selectedRow);
+                let rowToIdx = this.state.pageData.indexOf(row);
 
-            // select target row
-            row.selected = !rowSelected;
+                let goForward = rowFromIdx < rowToIdx;
+
+                // select all rows between previously selected and just selected row
+                let i = rowFromIdx;
+                let done;
+                while (!done) {
+                    let currentRow = this.state.pageData[i];
+                    currentRow.selected = true;
+                    
+                    i = goForward ? ++i : --i;
+                    done = goForward ? (i > rowToIdx) : (i < rowToIdx);
+                }
+
+            // single
+            } else {
+                let rowSelected = row.selected;
+
+                if (!e.ctrlKey) {
+                    // de-select all the rows
+                    this.state.data.forEach(i => {delete i.selected});
+                }
+
+                // select target row
+                row.selected = !rowSelected;
+            }
 
             this.props.onRowSelected();
         }
@@ -149,8 +213,6 @@ export default class DataTable extends React.Component {
     };
 
     onContextMenu = e => {
-
-        console.log(this.props.data);
 
         // no header or footer click
         if (!$(e.target).closest('.data-row')[0]) {
@@ -173,6 +235,52 @@ export default class DataTable extends React.Component {
         e.preventDefault();
     };
 
+    onSetPage = (pageNumber) => {
+        
+        this.updatePageData(
+            this.state.data,
+            this.props.columns,
+            null,
+            this.state.sortColumnName,
+            this.state.sortAscending,
+            pageNumber,
+            this.state.pageSize);
+    };
+
+    onChangeSort = (sort, sortAscending) => {
+        let pageCurrent = this.state.pageCurrent;
+        if (sort != this.state.sortColumnName) {
+            // move to first page on sort column change
+            pageCurrent = 0;
+        }
+
+        this.updatePageData(
+            this.state.data,
+            this.props.columns,
+            null,
+            sort,
+            sortAscending,
+            pageCurrent,
+            this.state.pageSize);
+    };
+
+    //this method handles the filtering of the data
+    onSetFilter = (filter) => {
+        throw Error('Not implemented');
+    };
+
+    //this method handles determining the page size
+    onSetPageSize = (size) => {
+        this.updatePageData(
+            this.state.data,
+            this.props.columns,
+            null,
+            this.state.sortColumnName,
+            this.state.sortAscending,
+            this.state.pageCurrent,
+            size);
+    };
+
     rowMetadata = {
         'bodyCssClassName': (rowData) => {
             let stardart = 'data-row';
@@ -181,78 +289,12 @@ export default class DataTable extends React.Component {
         }
     };
 
-    //what page is currently viewed
-    setPage = (pageNumber) => {
-        console.log(`setPage - ${pageNumber || 0}`)
-        let {externalResultsPerPage} = this.state;
-        
-        var startRowIdx = !pageNumber ?
-            0 :
-            pageNumber * externalResultsPerPage;
-        
-        let pageRows = this.props.data.slice(startRowIdx,
-            startRowIdx + externalResultsPerPage > this.props.data.length ?
-                this.props.data.length : 
-                startRowIdx + externalResultsPerPage);
-
-        this.setState({
-            results: pageRows,
-            currentPage: pageNumber
-        });
-    };
-
-    //this will handle how the data is sorted
-    sortData = (sortProp, sortAscending, data) => {
-        console.log(`sortData - ${sortProp} - ${sortAscending}`)
-        //sorting should generally happen wherever the data is coming from
-        let columnData = this.props.columns.find(c => c.columnName === sortProp);
-        let sortedData = data.sort(columnData.sorter || alphabetSorter(sortProp));
-
-        if(sortAscending === false){
-            sortedData.reverse();
-        }
-        return {
-            currentPage: 0,
-            externalSortColumn: sortProp,
-            externalSortAscending: sortAscending,
-            results: sortedData.slice(0, this.state.externalResultsPerPage)
-        };
-    };
-
-    //this changes whether data is sorted in ascending or descending order
-    changeSort = (sort, sortAscending) => {
-        console.log(`changeSort - ${sort} - ${sortAscending}`)
-        this.setState(this.sortData(sort, sortAscending, this.props.data));
-    };
-
-    //this method handles the filtering of the data
-    setFilter = (filter) => {
-        console.log(`setFilter - ${filter}`)
-    };
-
-    //this method handles determining the page size
-    setPageSize = (size) => {
-        console.log(`setPageSize - ${size}`)
-
-        let {data} = this.props;
-
-        let pagesCount = Math.round(
-            data.length > size ? data.length / size : 1);
-
-        this.setState({
-            currentPage: 0,
-            externalResultsPerPage: size,
-            maxPages: pagesCount,
-            results: data.slice(0, size)
-        });
-    };
-
     render() {
         return (
             <div onContextMenu={this.onContextMenu}>
 
                 <Griddle ref={'table'}
-                         results={this.state.results}
+                         results={this.state.pageData}
                          columnMetadata={this.props.columns}
                          tableClassName={cx('table', 'table-striped', this.classes.table)}
                          useGriddleStyles={false}
@@ -262,17 +304,17 @@ export default class DataTable extends React.Component {
                          showSettings={false}
                          showPager={true}
                          
-                         useExternal={true} 
-                         externalSetPage={this.setPage}
-                         externalChangeSort={this.changeSort}
-                         externalSetFilter={this.setFilter}
-                         externalSetPageSize={this.setPageSize}
+                         useExternal={true}
+                         externalChangeSort={this.onChangeSort}
+                         externalSetPage={this.onSetPage}
+                         externalSetPageSize={this.onSetPageSize}
+                         externalSetFilter={this.onSetFilter}
 
-                         externalMaxPage={this.state.maxPages}
-                         resultsPerPage={this.state.externalResultsPerPage}
-                         externalCurrentPage={this.state.currentPage} 
-                         externalSortColumn={this.state.externalSortColumn} 
-                         externalSortAscending={this.state.externalSortAscending}/>
+                         externalMaxPage={this.state.pagesCount}
+                         resultsPerPage={this.state.pageSize}
+                         externalCurrentPage={this.state.pageCurrent} 
+                         externalSortColumn={this.state.sortColumnName} 
+                         externalSortAscending={this.state.sortAscending}/>
             </div>
         );
     }
