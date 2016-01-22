@@ -7,48 +7,54 @@ import cx from 'classnames'
 import {alphabetSorter} from './sorters'
 
 @css({
-    table: {
-        '& thead th:hover': {
-            'cursor': 'pointer'
-        },
-        '& thead th[data-title=selected]': {
-            // hide strange 'selected' column header
-            // https://github.com/GriddleGriddle/Griddle/issues/323
-            'display': 'none'
-        },
-        '& tbody tr:hover': {
-            'background-color': '#f3f3f3',
-            'cursor': 'pointer'
-        },
-        '& tbody tr.selected': {
-            'background-color': '#337AB7',
-            'color': 'white'
-        },
-        '& .footer-container': {
-            '& .griddle-previous': {
-                'display': 'inline-block',
-                'width': '20%',
-                'text-align': 'left'
+    wrapper: {
+        '& .table': {
+            '& thead th:hover': {
+                'cursor': 'pointer'
             },
-            '& .griddle-next': {
-                'display': 'inline-block',
-                'width': '20%',
-                'text-align': 'right'
+            '& thead th[data-title=selected]': {
+                // hide strange 'selected' column header
+                // https://github.com/GriddleGriddle/Griddle/issues/323
+                'display': 'none'
             },
-            '& .griddle-page': {
-                'display': 'inline-block',
-                'width': '60%',
-                'text-align': 'center'
+            '& tbody tr:hover': {
+                'background-color': '#f3f3f3',
+                'cursor': 'pointer'
+            },
+            '& tbody tr.selected': {
+                'background-color': '#337AB7',
+                'color': 'white'
+            },
+            '& .footer-container': {
+                '& .griddle-previous': {
+                    'display': 'inline-block',
+                    'width': '20%',
+                    'text-align': 'left'
+                },
+                '& .griddle-next': {
+                    'display': 'inline-block',
+                    'width': '20%',
+                    'text-align': 'right'
+                },
+                '& .griddle-page': {
+                    'display': 'inline-block',
+                    'width': '60%',
+                    'text-align': 'center'
+                }
+            },
+            '& tbody tr': {
+                // disable selection (for batch selection with shift)
+                '-webkit-user-select': 'none',
+                '-khtml-user-select': 'none',
+                '-khtml-user-select': 'none',
+                '-moz-user-select': 'none',
+                '-ms-user-select': 'none',
+                'user-select': 'none'
             }
         },
-        '& tbody tr': {
-            // disable selection (for batch selection with shift)
-            '-webkit-user-select': 'none',
-            '-khtml-user-select': 'none',
-            '-khtml-user-select': 'none',
-            '-moz-user-select': 'none',
-            '-ms-user-select': 'none',
-            'user-select': 'none'
+        '& .griddle-nodata': {
+            'padding': '10px',
+            'text-align': 'center'
         }
     }
 })
@@ -306,19 +312,20 @@ export default class DataTable extends React.Component {
 
     render() {
         return (
-            <div onContextMenu={this.onContextMenu}>
+            <div onContextMenu={this.onContextMenu}
+                 className={ this.classes.wrapper}>
 
                 <Griddle ref={'table'}
                          results={this.state.pageData}
                          columnMetadata={this.props.columns}
-                         tableClassName={cx('table', 'table-striped', this.classes.table)}
+                         tableClassName={cx('table', 'table-striped')}
                          useGriddleStyles={false}
                          onRowClick={this.onRowClick}
                          rowMetadata={this.rowMetadata}
                          showFilter={false}
                          showSettings={false}
                          showPager={this.props.paging}
-												 noDataMessage={this.props.noDataMessage}
+					     noDataMessage={this.props.noDataMessage}
                          
                          useExternal={true}
                          externalChangeSort={this.onChangeSort}
