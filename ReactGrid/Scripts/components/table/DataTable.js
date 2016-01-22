@@ -219,7 +219,7 @@ export default class DataTable extends React.Component {
                 row.selected = !rowSelected;
             }
 
-            this.props.onRowSelected();
+            this.props.onRowSelected(row);
         }
 
         this.forceUpdate();
