@@ -4,9 +4,10 @@ import MenuItem from './MenuItem'
 
 @css({
     menu: {
-        'position': 'absolute',
+        'position': 'fixed',
         'width': '200px',
         'background-color': 'white',
+        'z-index': '100',
         'padding': '5px 0',
         'border': '1px solid lightgray'
     }

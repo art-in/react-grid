@@ -67,12 +67,12 @@ export default class DataTable extends React.Component {
         onRowSelected: React.PropTypes.func.isRequired,
         onContextMenu: React.PropTypes.func.isRequired,
         paging: React.PropTypes.bool,
-				noDataMessage: React.PropTypes.string
+		noDataMessage: React.PropTypes.string
     };
 
     static defaultProps = {
         paging: true,
-				noDataMessage: 'No data to display'
+		noDataMessage: 'No data to display'
     };
 
     state = {
@@ -241,11 +241,10 @@ export default class DataTable extends React.Component {
         }
 
         // show context menu
-        let bodyStyle = window.getComputedStyle(document.body, null);
         this.state.contextMenu = {
             pos: {
-                x: e.pageX - parseInt(bodyStyle.marginLeft), 
-                y: e.pageY - parseInt(bodyStyle.marginTop)
+                x: e.clientX, 
+                y: e.clientY
             }
         };
 
