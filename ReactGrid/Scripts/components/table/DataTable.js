@@ -60,11 +60,13 @@ export default class DataTable extends React.Component {
         showRowSelection: React.PropTypes.bool.isRequired,
         onRowSelected: React.PropTypes.func.isRequired,
         onContextMenu: React.PropTypes.func.isRequired,
-        paging: React.PropTypes.bool
+        paging: React.PropTypes.bool,
+				noDataMessage: React.PropTypes.string
     };
 
     static defaultProps = {
-        paging: true
+        paging: true,
+				noDataMessage: 'No data to display'
     };
 
     state = {
@@ -316,6 +318,7 @@ export default class DataTable extends React.Component {
                          showFilter={false}
                          showSettings={false}
                          showPager={this.props.paging}
+												 noDataMessage={this.props.noDataMessage}
                          
                          useExternal={true}
                          externalChangeSort={this.onChangeSort}
