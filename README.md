@@ -5,7 +5,7 @@
    * [x] batch (+ shift)
  - [x] context menu
  - [ ] shortcuts
-   * [ ] arrows - row navigation
+   * [x] arrows - row navigation
    * [ ] enter - edit row
    * [ ] tab - navigate cells
    * [ ] ctrl+a - select all
