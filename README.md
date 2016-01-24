@@ -4,5 +4,11 @@
    * [x] one by one (+ ctrl)
    * [x] batch (+ shift)
  - [x] context menu
- - [ ] cell editing (text, dropdown)
- 
+ - [ ] shortcuts
+   * [ ] arrows - row navigation
+   * [ ] enter - edit row
+   * [ ] tab - navigate cells
+   * [ ] ctrl+a - select all
+ - [ ] cell editing
+   * [ ] text
+   * [ ] dropdown
