@@ -8,6 +8,10 @@ import {css} from '../helpers/react-helpers'
         border: '1px solid green',
         width: '900px',
         margin: '0 auto'
+    },
+    itemlist: {
+        'max-height': '300px',
+        'overflow-y': 'auto'
     }
 })
 export default class App extends React.Component {
@@ -38,7 +42,8 @@ export default class App extends React.Component {
         return (
             <main className={this.classes.main}>
                 <ItemList items={this.state.items}
-                          onItemsDelete={this.onItemsDelete} />
+                          onItemsDelete={this.onItemsDelete}
+                          className={this.classes.itemlist} />
             </main>
         );
     }

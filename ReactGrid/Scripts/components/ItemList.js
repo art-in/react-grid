@@ -4,6 +4,7 @@ import ContextMenu from './menu/ContextMenu'
 import $ from 'jquery'
 import {css} from '../helpers/react-helpers'
 import {alphabetSorter, numericSorter} from './table/sorters'
+import cx from 'classnames'
 
 @css({
     list: {
@@ -18,7 +19,6 @@ export default class ItemList extends React.Component {
     };
 
     state = {
-        showItemSelection: false,
         contextMenu: {
             shown: false,
             pos: {
@@ -31,34 +31,6 @@ export default class ItemList extends React.Component {
 
     classes = this.props.sheet.classes;
 
-    onFocus = e => {
-        this.state.showItemSelection = true;
-    };
-
-    onBlur = e => {
-        if (e.target !== this.refs.wrapper) {
-            // table nav buttons can throw 'blur' too
-            // interested in table wrapper 'blur' only
-            return;
-        }
-        
-        this.state.showItemSelection = false;
-        
-        // hide context menu
-        let {contextMenu} = this.state;
-        contextMenu.shown = false;
-
-        this.forceUpdate();
-    };
-
-    onTableRowSelected = () => {
-        // hide context menu
-        let {contextMenu} = this.state;
-        contextMenu.shown = false;
-
-        this.forceUpdate();
-    };
-
     onTableContextMenu = (pos, items) => {
         let {contextMenu} = this.state;
 
@@ -66,6 +38,16 @@ export default class ItemList extends React.Component {
         contextMenu.pos = pos;
         contextMenu.targetItems = items;
 
+        this.forceUpdate();
+    };
+
+    onTableBlur = () => {
+        this.state.contextMenu.shown = false;
+        this.forceUpdate();
+    };
+
+    onTableRowSelected = () => {
+        this.state.contextMenu.shown = false;
         this.forceUpdate();
     };
 
@@ -95,29 +77,25 @@ export default class ItemList extends React.Component {
     };
 
     render() {
-        let {contextMenu, showItemSelection} = this.state;
+        let {contextMenu} = this.state;
 
         return (
-            <div tabIndex='0'
-                 className={this.classes.list}
-                 onFocus={this.onFocus}
-                 onBlur={this.onBlur}
-                 ref='wrapper'>
-
-                <DataTable data={this.props.items}
-                           columns={[{
-                               columnName: 'Id',
-                               cssClassName: 'col-md-3',
-                               sorter: numericSorter('Id'),
-                               initialSort: true
-                           }, {
-                               columnName: 'Name',
-                               cssClassName: 'col-md-9'
-                           }]}
-                           showRowSelection={showItemSelection}
-                           onRowSelected={this.onTableRowSelected}
-                           onContextMenu={this.onTableContextMenu} />
-            
+            <DataTable data={this.props.items}
+                columns={[{
+                    columnName: 'Id',
+                    cssClassName: 'col-md-3',
+                    sorter: numericSorter('Id'),
+                    initialSort: true
+                    }, {
+                    columnName: 'Name',
+                    cssClassName: 'col-md-9'
+                }]}
+                className={cx(this.classes.list, this.props.className)}
+                paging={false}
+                onRowSelected={this.onTableRowSelected}
+                onContextMenu={this.onTableContextMenu}
+                onBlur={this.onTableBlur}>
+                
                 {contextMenu.shown &&
                         <ContextMenu ref="contextMenu"
                             pos={contextMenu.pos}
@@ -139,7 +117,8 @@ export default class ItemList extends React.Component {
                                     }]
                             }/>
                 }
-            </div>
+
+            </DataTable>
         )
     }
 }

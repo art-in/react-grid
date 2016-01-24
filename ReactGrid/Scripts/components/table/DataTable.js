@@ -8,6 +8,10 @@ import {alphabetSorter} from './sorters'
 
 @css({
     wrapper: {
+        // to get row offset relative to wrapper,
+        // for appropriate scrolling
+        'position': 'relative',
+
         '& .table': {
             '& thead th:hover': {
                 'cursor': 'pointer'
@@ -44,6 +48,7 @@ import {alphabetSorter} from './sorters'
             },
             '& tbody tr': {
                 // disable selection (for batch selection with shift)
+                // TODO: use jsx plugin for vendor prefixes
                 '-webkit-user-select': 'none',
                 '-khtml-user-select': 'none',
                 '-khtml-user-select': 'none',
@@ -63,11 +68,11 @@ export default class DataTable extends React.Component {
     static propTypes = {
         data: React.PropTypes.arrayOf(React.PropTypes.object).isRequired,
         columns: React.PropTypes.array.isRequired,
-        showRowSelection: React.PropTypes.bool.isRequired,
+        paging: React.PropTypes.bool,
+        noDataMessage: React.PropTypes.string,
         onRowSelected: React.PropTypes.func.isRequired,
         onContextMenu: React.PropTypes.func.isRequired,
-        paging: React.PropTypes.bool,
-		noDataMessage: React.PropTypes.string
+        onBlur: React.PropTypes.func.isRequired
     };
 
     static defaultProps = {
@@ -82,17 +87,16 @@ export default class DataTable extends React.Component {
         pageSize: 5,
         pagesCount: 0,
         sortColumnName: null,
-        sortAscending: true
+        sortAscending: true,
+
+        // currently selected row
+        activeRowData: null
     };
 
     classes = this.props.sheet.classes;
 
     componentWillReceiveProps(nextProps) {
         this.state.data = nextProps.data;
-
-        if (!nextProps.showRowSelection) {
-            nextProps.data.forEach(i => {delete i.selected});
-        }
 
         if (!nextProps.paging) {
             this.state.pageSize = +Infinity;
@@ -131,7 +135,7 @@ export default class DataTable extends React.Component {
         let columnMetadata = columnsMetadata.find(c => c.columnName === sortColumn);
         let columnSorter = (columnMetadata && columnMetadata.sorter) || alphabetSorter(sortColumn);
 
-        // in case pass wrong sorter func
+        // in case pass invalid sorter func
         if (columnSorter.length < 2) {
             console.warn('column sorter consumes less arguments than required (a, b)!');
         }
@@ -163,13 +167,13 @@ export default class DataTable extends React.Component {
         let pageRows = data.slice(startRowIdx, lastRowIdx);
 
         this.setState({
-                    pageData: pageRows,
-                    pageCurrent: page,
-                        pageSize: pageSize,
-                        pagesCount: pagesCount,
-                sortColumnName: sortColumn,
-                sortAscending: sortAscending
-                });
+            pageData: pageRows,
+            pageCurrent: page,
+            pageSize: pageSize,
+            pagesCount: pagesCount,
+            sortColumnName: sortColumn,
+            sortAscending: sortAscending
+        });
     }
 
     onRowClick = (rowComponent, e) => {
@@ -177,7 +181,7 @@ export default class DataTable extends React.Component {
         
         let {contextMenu} = this.state;
 
-        // show context menu
+        // context menu event
         if (contextMenu) {
             delete this.state.contextMenu;
 
@@ -230,6 +234,8 @@ export default class DataTable extends React.Component {
             this.props.onRowSelected(row);
         }
 
+        this.state.activeRowData = row;
+
         this.forceUpdate();
     };
 
@@ -256,7 +262,6 @@ export default class DataTable extends React.Component {
     };
 
     onSetPage = (pageNumber) => {
-        
         this.updatePageData(
             this.state.data,
             this.props.columns,
@@ -284,12 +289,10 @@ export default class DataTable extends React.Component {
             this.state.pageSize);
     };
 
-    //this method handles the filtering of the data
     onSetFilter = (filter) => {
         throw Error('Not implemented');
     };
 
-    //this method handles determining the page size
     onSetPageSize = (size) => {
         this.updatePageData(
             this.state.data,
@@ -301,18 +304,136 @@ export default class DataTable extends React.Component {
             size);
     };
 
-    rowMetadata = {
-        'bodyCssClassName': (rowData) => {
-            let stardart = 'data-row';
-            return rowData.selected && this.props.showRowSelection ? 
-                cx(stardart, 'selected') : stardart;
+    onKeyDown = e => {
+        
+        switch (e.keyCode) {
+        case 38:
+            // arrow up
+            this.moveNextRow(false, e.shiftKey);
+            e.preventDefault();
+        break;
+        case 40:
+            // arrow down
+            this.moveNextRow(true, e.shiftKey);
+            e.preventDefault();
+        break;
         }
+
+    };
+
+    moveNextRow(down, batch) {
+        let {pageData} = this.state;
+
+        // get selected row index
+        let selectedIdx;
+        if (pageData.some(r => r.selected)) {
+            if (down) {
+                // last selected row
+                pageData.reverse();
+                selectedIdx = pageData.length - pageData.findIndex(r => r.selected) - 1;
+                pageData.reverse();
+            } else {
+                // first selected row
+                selectedIdx = pageData.findIndex(object => object.selected);
+            }
+        } else {
+            selectedIdx = -1;
+        }
+
+        if ((down && selectedIdx === pageData.length - 1) ||
+            (!down && selectedIdx === 0)) {
+            // no move outside
+            return;
+        }
+
+        if (!batch) {
+            pageData.forEach(r => delete r.selected);
+        }
+
+        // get index of row to select next
+        let nextToSelectIdx = selectedIdx === -1 ?
+            (down ? 0 : pageData.length - 1) :
+            (down ? selectedIdx + 1 : selectedIdx - 1);
+        
+        let rowToSelect = pageData[nextToSelectIdx];
+        
+        rowToSelect.selected = true;
+
+        this.props.onRowSelected(rowToSelect);
+        this.state.activeRowData = rowToSelect;
+
+        this.forceUpdate();
+    }
+
+    componentDidUpdate() {
+        
+        // scroll to make active row visible
+        let activeRowData = this.state.activeRowData;
+        if (activeRowData) {
+            delete this.state.activeRowData;
+
+            let rowIdx = this.state.pageData.indexOf(activeRowData);
+            
+            let $wrapperNode = $(ReactDOM.findDOMNode(this.refs.wrapper));
+            let $tableNode = $(ReactDOM.findDOMNode(this.refs.table));
+            let $rowNode = $tableNode.find('.data-row').eq(rowIdx);
+            
+            if ($rowNode.length === 0) {
+                throw Error('Active row node not found');
+            }
+
+            // row offset relative to wrapper (without wrapper scroll)
+            let rowOffsetTop = $rowNode.position().top;
+
+            // wrapper scroll from top
+            let wrapperScrollTop = $wrapperNode.scrollTop();
+
+            let rowHeight = $rowNode.height();
+            let wrapperHeight = $wrapperNode.height();
+
+            if (rowOffsetTop < wrapperScrollTop) {
+                // row is above the scroll frame
+                $wrapperNode.scrollTop(rowOffsetTop);
+            } else {
+                let diff = (rowOffsetTop + rowHeight) - 
+                    (wrapperScrollTop + wrapperHeight);
+
+                if (diff > 0) {
+                    // row is below the scroll frame
+                    $wrapperNode.scrollTop(wrapperScrollTop + diff);
+                }
+            }
+        }
+    }
+
+    onBlur = e => {
+        if (e.target !== this.refs.wrapper) {
+            // table nav buttons can throw 'blur' too
+            // interested in table wrapper 'blur' only
+            return;
+        }
+        
+        this.state.data.forEach(i => {delete i.selected});
+
+        this.props.onBlur();
+        this.forceUpdate();
     };
 
     render() {
+        let rowMetadata = {
+            'bodyCssClassName': (rowData) => {
+                let stardart = 'data-row';
+                return rowData.selected ? 
+                    cx(stardart, 'selected') : stardart;
+            }
+        }
+
         return (
-            <div onContextMenu={this.onContextMenu}
-                 className={ this.classes.wrapper}>
+            <div ref='wrapper' tabIndex={0}
+                 className={cx(this.classes.wrapper, this.props.className)}
+                 onBlur={this.onBlur}
+                 onContextMenu={this.onContextMenu}
+                 onKeyDown={this.onKeyDown}>
 
                 <Griddle ref={'table'}
                          results={this.state.pageData}
@@ -320,7 +441,7 @@ export default class DataTable extends React.Component {
                          tableClassName={cx('table', 'table-striped')}
                          useGriddleStyles={false}
                          onRowClick={this.onRowClick}
-                         rowMetadata={this.rowMetadata}
+                         rowMetadata={rowMetadata}
                          showFilter={false}
                          showSettings={false}
                          showPager={this.props.paging}
@@ -337,6 +458,8 @@ export default class DataTable extends React.Component {
                          externalCurrentPage={this.state.pageCurrent} 
                          externalSortColumn={this.state.sortColumnName} 
                          externalSortAscending={this.state.sortAscending}/>
+
+                {this.props.children}
             </div>
         );
     }
