@@ -18,9 +18,7 @@ export default class NumberColumn extends React.Component {
     onKeyDown = e => {
         if (e.keyCode === 13) {
             // enter
-            // update source data
-            let value = this.refs.input.value;
-            this.props.rowData[this.props.metadata.columnName] = value;
+            this.save();
         }
 
         if (e.keyCode === 38 || e.keyCode === 40) {
@@ -28,6 +26,15 @@ export default class NumberColumn extends React.Component {
             // do not propagate, change value instead
             e.stopPropagation();
         }
+    };
+
+    onBlur = () => {
+        this.save();
+    };
+
+    save = () => {
+        let value = this.refs.input.value;
+        this.props.rowData[this.props.metadata.columnName] = value;
     };
 
     render() {
@@ -39,7 +46,8 @@ export default class NumberColumn extends React.Component {
                         type='number'
                         defaultValue={this.props.data}
                         onClick={this.onClick}
-                        onKeyDown={this.onKeyDown} /> :
+                        onKeyDown={this.onKeyDown}
+                        onBlur={this.onBlur} /> :
 
                     this.props.data}
             </div>

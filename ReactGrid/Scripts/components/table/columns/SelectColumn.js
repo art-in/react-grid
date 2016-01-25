@@ -24,9 +24,7 @@ export default class SelectColumn extends React.Component {
     onKeyDown = e => {
         if (e.keyCode === 13) {
             // enter
-            // update source data
-            let value = parseInt(this.refs.select.value);
-            this.props.rowData[this.props.metadata.columnName] = value;
+            this.save();
         }
 
         if (e.keyCode === 38 || e.keyCode === 40) {
@@ -34,6 +32,15 @@ export default class SelectColumn extends React.Component {
             // do not propagate, change value instead
             e.stopPropagation();
         }
+    };
+
+    onBlur = () => {
+        this.save();
+    };
+
+    save = () => {
+        let value = parseInt(this.refs.select.value);
+        this.props.rowData[this.props.metadata.columnName] = value;
     };
 
     render() {
@@ -49,9 +56,10 @@ export default class SelectColumn extends React.Component {
                 {this.props.rowData.editing ?
 
                     <select ref='select'
+                        defaultValue={this.props.data}
                         onClick={this.onClick}
                         onKeyDown={this.onKeyDown}
-                        defaultValue={this.props.data}>
+                        onBlur={this.onBlur}>
                         
                         {this.props.metadata.selectOptions.map(o => 
                             <option value={o.value} key={o.value}>

@@ -5,7 +5,7 @@ import jss from 'jss';
 
 // configure jss
 jss.use(require('jss-nested')());
-
+jss.use(require('jss-vendor-prefixer')());
 
 ReactDom.render(React.createElement(App), 
     document.getElementById('app-root'));

@@ -18,10 +18,17 @@ export default class TextColumn extends React.Component {
     onKeyDown = e => {
         if (e.keyCode === 13) {
             // enter
-            // update source data
-            let value = this.refs.input.value;
-            this.props.rowData[this.props.metadata.columnName] = value;
+            this.save();
         }
+    };
+
+    onBlur = () => {
+        this.save();
+    };
+
+    save = () => {
+        let value = this.refs.input.value;
+        this.props.rowData[this.props.metadata.columnName] = value;
     };
 
     render() {
@@ -33,7 +40,8 @@ export default class TextColumn extends React.Component {
                         type='text'
                         defaultValue={this.props.data}
                         onClick={this.onClick}
-                        onKeyDown={this.onKeyDown} /> :
+                        onKeyDown={this.onKeyDown}
+                        onBlur={this.onBlur} /> :
 
                     this.props.data}
             </div>

@@ -13,6 +13,9 @@ import {alphabetSorter} from './sorters'
         'position': 'relative',
 
         '& .table': {
+            // disable selection (for batch selection with shift)
+            'user-select': 'none',
+
             '& thead th:hover': {
                 'cursor': 'pointer'
             },
@@ -54,15 +57,6 @@ import {alphabetSorter} from './sorters'
                     'width': '60%',
                     'text-align': 'center'
                 }
-            },
-            '& tbody tr': {
-                // disable selection (for batch selection with shift)
-                // TODO: use jsx plugin for vendor prefixes
-                '-webkit-user-select': 'none',
-                '-khtml-user-select': 'none',
-                '-moz-user-select': 'none',
-                '-ms-user-select': 'none',
-                'user-select': 'none'
             }
         },
         '& .griddle-nodata': {
@@ -142,6 +136,27 @@ export default class DataTable extends React.Component {
             this.state.pageCurrent,
             this.state.pageSize);
     }
+
+    componentDidMount() {
+        document.addEventListener('selectstart', this.onSelectStart);
+    }
+
+    componentWillUnmount() {
+        document.removeEventListener('selectstart', this.onSelectStart);
+    }
+
+    onSelectStart = (e) => {
+        let $wrapper = $(ReactDOM.findDOMNode(this.refs.wrapper));
+        let $selectedElement = $(e.target);
+
+        // prevent text selection inside grid, except inputs
+        // HACK(IE): text selected on batch row selection with shift, 
+        //           ignoring CSS 'user-select'
+        if ($wrapper.has($selectedElement).length &&
+            !$selectedElement.is('input, select')) {
+            e.preventDefault()
+        }
+    };
 
     /**
      * Applies sorting and paging for the data.
@@ -258,6 +273,10 @@ export default class DataTable extends React.Component {
 
         this.state.activeRowData = row;
         this.state.pageData.forEach(r => delete r.editing);
+        
+        // focus table
+        // IE: when selecting row table does not get focused
+        $(ReactDOM.findDOMNode(this.refs.wrapper)).focus();
 
         this.forceUpdate();
     };
@@ -328,7 +347,7 @@ export default class DataTable extends React.Component {
     };
 
     onKeyDown = e => {
-        
+
         switch (e.keyCode) {
         case 13:
             // enter
@@ -500,12 +519,13 @@ export default class DataTable extends React.Component {
             let $tableNode = $(ReactDOM.findDOMNode(this.refs.table));
             let $rowNode = $tableNode.find('.data-row').eq(rowIdx);
 
-            $rowNode.find('input:first').select().focus();
+            $rowNode.find('input:first').focus().select();
         }
     }
 
     onBlur = e => {
         // wait a while to get currently focused element
+        // FF: should wait >= 100ms
         setTimeout(() => {
             let $wrapper = $(ReactDOM.findDOMNode(this.refs.wrapper));
             let $focusedElement = $(document.activeElement);
@@ -521,7 +541,7 @@ export default class DataTable extends React.Component {
                 this.props.onBlur();
                 this.forceUpdate();
             }
-        }, 0);
+        }, 100);
     };
 
     render() {
