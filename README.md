@@ -13,3 +13,7 @@
  - [ ] cell editing
    * [x] text
    * [ ] dropdown
+ - [ ] crossbrowser
+   * [x] Chrome
+   * [ ] IE
+   * [ ] FF
