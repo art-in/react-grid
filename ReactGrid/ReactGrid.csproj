@@ -111,12 +111,14 @@
     <Content Include="Scripts\boot.js" />
     <Content Include="Scripts\components\ItemList.js" />
     <Content Include="Scripts\components\table\columns\NumberColumn.js" />
+    <Content Include="Scripts\components\table\columns\SelectColumn.js" />
     <Content Include="Scripts\components\table\DataTable.js" />
     <Content Include="Scripts\components\menu\ContextMenu.js" />
     <Content Include="Scripts\components\menu\MenuItem.js" />
     <Content Include="Scripts\components\table\sorters.js" />
     <Content Include="Scripts\components\table\columns\TextColumn.js" />
     <Content Include="Scripts\helpers\react-helpers.js" />
+    <Content Include="Scripts\models\ItemType.js" />
     <Content Include="Web.config" />
   </ItemGroup>
   <ItemGroup>
@@ -128,6 +130,7 @@
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
     <Compile Include="Models\Item.cs" />
+    <Compile Include="Models\ItemType.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

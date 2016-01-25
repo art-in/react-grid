@@ -25,7 +25,7 @@ export default class NumberColumn extends React.Component {
 
         if (e.keyCode === 38 || e.keyCode === 40) {
             // up/down arrows
-            // do not propogate, change value instead
+            // do not propagate, change value instead
             e.stopPropagation();
         }
     };

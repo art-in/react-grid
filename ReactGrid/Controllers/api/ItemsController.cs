@@ -15,7 +15,8 @@ namespace ReactGrid.Controllers.api
                 items.Add(new Item()
                 {
                     Id = i,
-                    Name = "Item " + i
+                    Name = "Item " + i,
+                    Type = (ItemType)(i % 3)
                 });
             }
 

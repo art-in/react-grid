@@ -7,6 +7,8 @@ import {alphabetSorter, numericSorter} from './table/sorters'
 import cx from 'classnames'
 import TextColumn from './table/columns/TextColumn'
 import NumberColumn from './table/columns/NumberColumn'
+import SelectColumn from './table/columns/SelectColumn'
+import ItemType from '../models/ItemType'
 
 @css({
     list: {}
@@ -79,6 +81,9 @@ export default class ItemList extends React.Component {
     render() {
         let {contextMenu} = this.state;
 
+        let itemTypeOptions = ItemType.map((t, idx) => {
+            return {value: idx, displayValue: t}});
+
         return (
             <DataTable data={this.props.items}
                 columns={[{
@@ -89,9 +94,15 @@ export default class ItemList extends React.Component {
                         customComponent: NumberColumn
                     }, {
                         columnName: 'Name',
-                        cssClassName: 'col-md-9',
+                        cssClassName: 'col-md-6',
                         customComponent: TextColumn
-                }]}
+                    }, {
+                        columnName: 'Type',
+                        cssClassName: 'col-md-3',
+                        sorter: numericSorter('Type'),
+                        customComponent: SelectColumn,
+                        selectOptions: itemTypeOptions
+                    }]}
                 className={cx(this.classes.list, this.props.className)}
                 paging={false}
                 onContextMenu={this.onTableContextMenu}                

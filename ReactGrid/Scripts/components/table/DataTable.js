@@ -16,13 +16,6 @@ import {alphabetSorter} from './sorters'
             '& thead th:hover': {
                 'cursor': 'pointer'
             },
-            ['& thead th[data-title=selected],'+
-             '& thead th[data-title=editing]']: {
-                // hide strange columns
-                // names of added columns are equal to classes added to first row element
-                // https://github.com/GriddleGriddle/Griddle/issues/323
-                'display': 'none'
-            },
             '& tbody tr:hover': {
                 'background-color': '#f3f3f3',
                 'cursor': 'pointer'
@@ -37,11 +30,12 @@ import {alphabetSorter} from './sorters'
             '& tbody tr.editing': {
                 'background-color': '#F1F1F1'
             },
-            '& tbody tr.editing input': {
+            ['& tbody tr.editing input,'+
+             '& tbody tr.editing select']: {
                 'color': 'black',
                 'background-color': 'white',
                 'border': 'none',
-                'outline': 'none',
+                
                 'width': '100%'
             },
             '& .footer-container': {
@@ -98,6 +92,9 @@ export default class DataTable extends React.Component {
     };
 
     state = {
+        columns: [],
+        columnMetadata: [],
+
         data: [],
         pageData: [],
         pageCurrent: 0,
@@ -111,6 +108,14 @@ export default class DataTable extends React.Component {
     };
 
     classes = this.props.sheet.classes;
+
+    componentWillMount() {
+         this.state.columns = this.props.columns
+            .filter(c => c.visible === undefined || c.visible)
+            .map(c => c.columnName);
+        
+        this.state.columnMetadata = this.props.columns;
+    }
 
     componentWillReceiveProps(nextProps) {
         this.state.data = nextProps.data;
@@ -130,7 +135,7 @@ export default class DataTable extends React.Component {
 
         this.updatePageData(
             this.state.data,
-            nextProps.columns,
+            this.state.columnMetadata,
             null,
             sortColumnName,
             this.state.sortAscending,
@@ -351,7 +356,7 @@ export default class DataTable extends React.Component {
                     $(ReactDOM.findDOMNode(this.refs.wrapper)).focus();
                 } else {
                     // make editable
-                    if (this.props.columns.some(c => c.customComponent)) {
+                    if (this.state.columnMetadata.some(c => c.customComponent)) {
                         this.state.data.forEach(r => delete r.selected);
                         this.state.data.forEach(r => delete r.editing);
                         this.props.onAllRowsDeselected();
@@ -529,7 +534,7 @@ export default class DataTable extends React.Component {
                     {['editing']: rowData.editing});
             }
         }
-
+        
         return (
             <div ref='wrapper' tabIndex={0}
                  className={cx(this.classes.wrapper, this.props.className)}
@@ -539,7 +544,8 @@ export default class DataTable extends React.Component {
 
                 <Griddle ref={'table'}
                          results={this.state.pageData}
-                         columnMetadata={this.props.columns}
+                         columns={this.state.columns}
+                         columnMetadata={this.state.columnMetadata}
                          tableClassName={cx('table')}
                          useGriddleStyles={false}
                          onRowClick={this.onRowClick}
