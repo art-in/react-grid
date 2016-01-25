@@ -4,12 +4,16 @@
    * [x] one by one (+ ctrl)
    * [x] batch (+ shift)
  - [x] context menu
- - [ ] shortcuts
+ - [x] shortcuts
    * [x] arrows - row navigation
-   * [ ] enter - edit row
-   * [ ] tab - navigate cells
-   * [ ] ctrl+a - select all
-   * [ ] esc - de-select all
+   * [x] enter - edit row
+   * [x] tab - navigate cells
+   * [x] ctrl+a - select all
+   * [x] esc - de-select all
  - [ ] cell editing
-   * [ ] text
+   * [x] text
    * [ ] dropdown
+ - [ ] crossbrowser
+   * [x] Chrome
+   * [ ] IE
+   * [ ] FF
