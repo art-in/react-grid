@@ -34,7 +34,11 @@ gulp.task('build', ['clean'], function () {
             config.paths.sources.bootstrap_webpack,
             config.paths.sources.scripts + config.paths.sources.entryModule
         ],
-        plugins: plugins.concat([]),
+        plugins: plugins.concat([
+            new webpack.ProvidePlugin({
+                'fetch': 'imports?this=>global!exports?global.fetch!whatwg-fetch'
+            })
+        ]),
         module: {
             preLoaders: [
                 {

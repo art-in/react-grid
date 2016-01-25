@@ -5,6 +5,8 @@ import $ from 'jquery'
 import {css} from '../helpers/react-helpers'
 import {alphabetSorter, numericSorter} from './table/sorters'
 import cx from 'classnames'
+import TextColumn from './table/columns/TextColumn'
+import NumberColumn from './table/columns/NumberColumn'
 
 @css({
     list: {}
@@ -13,7 +15,8 @@ export default class ItemList extends React.Component {
 
     static propTypes = {
         items: React.PropTypes.array.isRequired,
-        onItemsDelete: React.PropTypes.func.isRequired
+        onItemsDelete: React.PropTypes.func.isRequired,
+        onItemEdit: React.PropTypes.func.isRequired
     };
 
     state = {
@@ -69,19 +72,25 @@ export default class ItemList extends React.Component {
         this.forceUpdate();
     };
 
+    onTableRowEdit = item => {
+        this.props.onItemEdit(item);
+    };
+
     render() {
         let {contextMenu} = this.state;
 
         return (
             <DataTable data={this.props.items}
                 columns={[{
-                    columnName: 'Id',
-                    cssClassName: 'col-md-3',
-                    sorter: numericSorter('Id'),
-                    initialSort: true
+                        columnName: 'Id',
+                        cssClassName: 'col-md-3',
+                        sorter: numericSorter('Id'),
+                        initialSort: true,
+                        customComponent: NumberColumn
                     }, {
-                    columnName: 'Name',
-                    cssClassName: 'col-md-9'
+                        columnName: 'Name',
+                        cssClassName: 'col-md-9',
+                        customComponent: TextColumn
                 }]}
                 className={cx(this.classes.list, this.props.className)}
                 paging={false}
@@ -89,7 +98,8 @@ export default class ItemList extends React.Component {
                 onRowSelected={this.hideContextMenu}
                 onAllRowsDeselected={this.hideContextMenu}
                 onAllRowsSelected={this.hideContextMenu}
-                onBlur={this.hideContextMenu}>
+                onBlur={this.hideContextMenu}
+                onRowEdit={this.onTableRowEdit}>
                 
                 {contextMenu.shown &&
                         <ContextMenu ref="contextMenu"

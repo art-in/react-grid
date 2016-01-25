@@ -16,8 +16,10 @@ import {alphabetSorter} from './sorters'
             '& thead th:hover': {
                 'cursor': 'pointer'
             },
-            '& thead th[data-title=selected]': {
-                // hide strange 'selected' column header
+            ['& thead th[data-title=selected],'+
+             '& thead th[data-title=editing]']: {
+                // hide strange columns
+                // names of added columns are equal to classes added to first row element
                 // https://github.com/GriddleGriddle/Griddle/issues/323
                 'display': 'none'
             },
@@ -25,9 +27,22 @@ import {alphabetSorter} from './sorters'
                 'background-color': '#f3f3f3',
                 'cursor': 'pointer'
             },
-            '& tbody tr.selected': {
+            '& tbody tr:not(.editing).selected': {
                 'background-color': '#337AB7',
                 'color': 'white'
+            },
+            '& tbody td': {
+                'padding': '2px 5px'
+            },
+            '& tbody tr.editing': {
+                'background-color': '#F1F1F1'
+            },
+            '& tbody tr.editing input': {
+                'color': 'black',
+                'background-color': 'white',
+                'border': 'none',
+                'outline': 'none',
+                'width': '100%'
             },
             '& .footer-container': {
                 '& .griddle-previous': {
@@ -51,7 +66,6 @@ import {alphabetSorter} from './sorters'
                 // TODO: use jsx plugin for vendor prefixes
                 '-webkit-user-select': 'none',
                 '-khtml-user-select': 'none',
-                '-khtml-user-select': 'none',
                 '-moz-user-select': 'none',
                 '-ms-user-select': 'none',
                 'user-select': 'none'
@@ -74,7 +88,8 @@ export default class DataTable extends React.Component {
         onRowSelected: React.PropTypes.func.isRequired,
         onAllRowsSelected: React.PropTypes.func.isRequired,
         onAllRowsDeselected: React.PropTypes.func.isRequired,
-        onBlur: React.PropTypes.func.isRequired
+        onBlur: React.PropTypes.func.isRequired,
+        onRowEdit: React.PropTypes.func.isRequired
     };
 
     static defaultProps = {
@@ -182,7 +197,7 @@ export default class DataTable extends React.Component {
         let row = rowComponent.props.data;
         
         let {contextMenu} = this.state;
-
+        
         // context menu event
         if (contextMenu) {
             delete this.state.contextMenu;
@@ -237,6 +252,7 @@ export default class DataTable extends React.Component {
         }
 
         this.state.activeRowData = row;
+        this.state.pageData.forEach(r => delete r.editing);
 
         this.forceUpdate();
     };
@@ -309,11 +325,53 @@ export default class DataTable extends React.Component {
     onKeyDown = e => {
         
         switch (e.keyCode) {
+        case 13:
+            // enter
+            let selectedRowData = this.state.pageData.find(r => r.selected);
+            if (selectedRowData) {
+                if (selectedRowData.editing) {
+                    // save edit
+                    delete selectedRowData.editing;
+
+                    this.props.onRowEdit(selectedRowData);
+
+                    // resort
+                    this.updatePageData(
+                        this.state.data,
+                        this.props.columns,
+                        null,
+                        this.state.sortColumnName,
+                        this.state.sortAscending,
+                        this.state.pageCurrent,
+                        this.state.pageSize);
+
+                    this.state.activeRowData = selectedRowData;
+
+                    // focus table
+                    $(ReactDOM.findDOMNode(this.refs.wrapper)).focus();
+                } else {
+                    // make editable
+                    if (this.props.columns.some(c => c.customComponent)) {
+                        this.state.data.forEach(r => delete r.selected);
+                        this.state.data.forEach(r => delete r.editing);
+                        this.props.onAllRowsDeselected();
+            
+                        selectedRowData.selected = true;
+                        selectedRowData.editing = true;
+                    }
+                }
+
+                this.forceUpdate(); 
+            }
+        break;
         case 27:
             // esc
             // de-select all
             this.state.data.forEach(r => delete r.selected);
+            this.state.data.forEach(r => {delete r.editing});
             this.props.onAllRowsDeselected();
+            // focus table
+            $(ReactDOM.findDOMNode(this.refs.wrapper)).focus();
             this.forceUpdate();
         break;
         case 38:
@@ -369,6 +427,8 @@ export default class DataTable extends React.Component {
             pageData.forEach(r => delete r.selected);
         }
 
+        pageData.forEach(r => delete r.editing);
+        
         // get index of row to select next
         let nextToSelectIdx = selectedIdx === -1 ?
             (down ? 0 : pageData.length - 1) :
@@ -380,6 +440,9 @@ export default class DataTable extends React.Component {
 
         this.props.onRowSelected(rowToSelect);
         this.state.activeRowData = rowToSelect;
+
+        // focus table
+        $(ReactDOM.findDOMNode(this.refs.wrapper)).focus();
 
         this.forceUpdate();
     }
@@ -423,27 +486,47 @@ export default class DataTable extends React.Component {
                 }
             }
         }
+
+        // focus first input in editing row
+        let editingRowData = this.state.data.find(r => r.editing);
+        if (editingRowData) {
+            let rowIdx = this.state.pageData.indexOf(editingRowData);
+
+            let $tableNode = $(ReactDOM.findDOMNode(this.refs.table));
+            let $rowNode = $tableNode.find('.data-row').eq(rowIdx);
+
+            $rowNode.find('input:first').select().focus();
+        }
     }
 
     onBlur = e => {
-        if (e.target !== this.refs.wrapper) {
-            // table nav buttons can throw 'blur' too
-            // interested in table wrapper 'blur' only
-            return;
-        }
-        
-        this.state.data.forEach(i => {delete i.selected});
+        // wait a while to get currently focused element
+        setTimeout(() => {
+            let $wrapper = $(ReactDOM.findDOMNode(this.refs.wrapper));
+            let $focusedElement = $(document.activeElement);
 
-        this.props.onBlur();
-        this.forceUpdate();
+            // blur if currently focused element is not inside wrapper
+            if (!$wrapper.has($focusedElement).length && 
+                !$focusedElement.is($wrapper)) {
+
+                // blur
+                this.state.data.forEach(r => {delete r.selected});
+                this.state.data.forEach(r => {delete r.editing});
+
+                this.props.onBlur();
+                this.forceUpdate();
+            }
+        }, 0);
     };
 
     render() {
         let rowMetadata = {
             'bodyCssClassName': (rowData) => {
                 let stardart = 'data-row';
-                return rowData.selected ? 
-                    cx(stardart, 'selected') : stardart;
+                return cx(
+                    stardart, 
+                    {['selected']: rowData.selected},
+                    {['editing']: rowData.editing});
             }
         }
 
@@ -457,7 +540,7 @@ export default class DataTable extends React.Component {
                 <Griddle ref={'table'}
                          results={this.state.pageData}
                          columnMetadata={this.props.columns}
-                         tableClassName={cx('table', 'table-striped')}
+                         tableClassName={cx('table')}
                          useGriddleStyles={false}
                          onRowClick={this.onRowClick}
                          rowMetadata={rowMetadata}

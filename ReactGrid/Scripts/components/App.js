@@ -38,12 +38,17 @@ export default class App extends React.Component {
         }
     };
 
+    onItemEdit = (item) => {
+        alert(`item edited: ${JSON.stringify(item)}`)
+    };
+
     render() {
         return (
             <main className={this.classes.main}>
                 <ItemList items={this.state.items}
-                          onItemsDelete={this.onItemsDelete}
-                          className={this.classes.itemlist} />
+                    className={this.classes.itemlist}
+                    onItemsDelete={this.onItemsDelete}
+                    onItemEdit={this.onItemEdit} />
             </main>
         );
     }

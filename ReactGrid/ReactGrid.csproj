@@ -110,10 +110,12 @@
     <Content Include="Scripts\components\App.js" />
     <Content Include="Scripts\boot.js" />
     <Content Include="Scripts\components\ItemList.js" />
+    <Content Include="Scripts\components\table\columns\NumberColumn.js" />
     <Content Include="Scripts\components\table\DataTable.js" />
     <Content Include="Scripts\components\menu\ContextMenu.js" />
     <Content Include="Scripts\components\menu\MenuItem.js" />
     <Content Include="Scripts\components\table\sorters.js" />
+    <Content Include="Scripts\components\table\columns\TextColumn.js" />
     <Content Include="Scripts\helpers\react-helpers.js" />
     <Content Include="Web.config" />
   </ItemGroup>
