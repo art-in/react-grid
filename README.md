@@ -10,10 +10,11 @@
    * [x] tab - navigate cells
    * [x] ctrl+a - select all
    * [x] esc - de-select all
- - [ ] cell editing
+ - [x] cell editing
    * [x] text
-   * [ ] dropdown
- - [ ] crossbrowser
-   * [x] Chrome
-   * [ ] IE
-   * [ ] FF
+   * [x] number
+   * [x] dropdown
+ - [x] crossbrowser
+   * [x] Chrome 47
+   * [x] IE 11
+   * [x] FF 41
