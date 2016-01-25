@@ -70,8 +70,10 @@ export default class DataTable extends React.Component {
         columns: React.PropTypes.array.isRequired,
         paging: React.PropTypes.bool,
         noDataMessage: React.PropTypes.string,
-        onRowSelected: React.PropTypes.func.isRequired,
         onContextMenu: React.PropTypes.func.isRequired,
+        onRowSelected: React.PropTypes.func.isRequired,
+        onAllRowsSelected: React.PropTypes.func.isRequired,
+        onAllRowsDeselected: React.PropTypes.func.isRequired,
         onBlur: React.PropTypes.func.isRequired
     };
 
@@ -307,6 +309,13 @@ export default class DataTable extends React.Component {
     onKeyDown = e => {
         
         switch (e.keyCode) {
+        case 27:
+            // esc
+            // de-select all
+            this.state.data.forEach(r => delete r.selected);
+            this.props.onAllRowsDeselected();
+            this.forceUpdate();
+        break;
         case 38:
             // arrow up
             this.moveNextRow(false, e.shiftKey);
@@ -316,6 +325,16 @@ export default class DataTable extends React.Component {
             // arrow down
             this.moveNextRow(true, e.shiftKey);
             e.preventDefault();
+        break;
+        case 65:
+            // ctrl+a
+            if (e.ctrlKey) {
+                // select all on current page
+                this.state.pageData.forEach(r => r.selected = true);
+                this.props.onAllRowsSelected();
+                this.forceUpdate();
+                e.preventDefault();
+            }
         break;
         }
 

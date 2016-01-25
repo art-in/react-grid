@@ -7,9 +7,7 @@ import {alphabetSorter, numericSorter} from './table/sorters'
 import cx from 'classnames'
 
 @css({
-    list: {
-        outline: 'none'
-    }
+    list: {}
 })
 export default class ItemList extends React.Component {
 
@@ -41,12 +39,7 @@ export default class ItemList extends React.Component {
         this.forceUpdate();
     };
 
-    onTableBlur = () => {
-        this.state.contextMenu.shown = false;
-        this.forceUpdate();
-    };
-
-    onTableRowSelected = () => {
+    hideContextMenu = () => {
         this.state.contextMenu.shown = false;
         this.forceUpdate();
     };
@@ -92,9 +85,11 @@ export default class ItemList extends React.Component {
                 }]}
                 className={cx(this.classes.list, this.props.className)}
                 paging={false}
-                onRowSelected={this.onTableRowSelected}
-                onContextMenu={this.onTableContextMenu}
-                onBlur={this.onTableBlur}>
+                onContextMenu={this.onTableContextMenu}                
+                onRowSelected={this.hideContextMenu}
+                onAllRowsDeselected={this.hideContextMenu}
+                onAllRowsSelected={this.hideContextMenu}
+                onBlur={this.hideContextMenu}>
                 
                 {contextMenu.shown &&
                         <ContextMenu ref="contextMenu"
