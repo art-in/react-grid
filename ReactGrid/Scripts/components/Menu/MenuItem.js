@@ -1,5 +1,5 @@
-﻿import React from 'react'
-import {css} from '../../helpers/react-helpers'
+﻿import React from 'react';
+import {css} from '../../helpers/react-helpers';
 
 @css({
     item: {
@@ -24,6 +24,6 @@ export default class MenuItem extends React.Component {
                  onClick={this.props.onClick}>
                 {this.props.title}
             </div>
-        )
+        );
     }
 }

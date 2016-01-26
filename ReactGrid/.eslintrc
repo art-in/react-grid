@@ -21,7 +21,10 @@
     "camelcase": 0,
     "padded-blocks": 0,
     "eol-last": 0,
-    "no-trailing-spaces": 1
+    "no-trailing-spaces": 0,
+
+    // JSX
+    "jsx-quotes": [ 2, "prefer-single" ]
   },
   "globals": {
     "$": true

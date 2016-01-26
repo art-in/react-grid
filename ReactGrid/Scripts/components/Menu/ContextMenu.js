@@ -1,6 +1,6 @@
-﻿import React from 'react'
-import {css} from '../../helpers/react-helpers'
-import MenuItem from './MenuItem'
+﻿import React from 'react';
+import {css} from '../../helpers/react-helpers';
+import MenuItem from './MenuItem';
 
 @css({
     menu: {
@@ -30,18 +30,20 @@ export default class ContextMenu extends React.Component {
 
         let menuItemComponents = menuItems.map(i => {
             return (
-                <MenuItem key={i.title} title={i.title} onClick={i.onClick} />
+                <MenuItem key={i.title} 
+                    title={i.title} 
+                    onClick={i.onClick} />
             );
-        })
+        });
 
         return (
             <div className={this.classes.menu}
-                 style={{
+                style={{
                     left: `${pos.x}px`,
                     top: `${pos.y}px`
-                 }}>
-                 {menuItemComponents}
+                }}>
+                {menuItemComponents}
             </div>    
-        )
+        );
     }
 }

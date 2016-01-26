@@ -1,7 +1,7 @@
-﻿import React from 'react'
+﻿import React from 'react';
 
 export default class SelectColumn extends React.Component {
-    
+
     static propTypes = {
         rowData: React.PropTypes.object.isRequired,
         data: React.PropTypes.oneOfType([
@@ -39,7 +39,7 @@ export default class SelectColumn extends React.Component {
     };
 
     save = () => {
-        let value = parseInt(this.refs.select.value);
+        let value = parseInt(this.refs.select.value, 10);
         this.props.rowData[this.props.metadata.columnName] = value;
     };
 
@@ -55,18 +55,18 @@ export default class SelectColumn extends React.Component {
             <div>
                 {this.props.rowData.editing ?
 
-                    <select ref='select'
+                    <select ref={'select'}
                         defaultValue={this.props.data}
                         onClick={this.onClick}
                         onKeyDown={this.onKeyDown}
                         onBlur={this.onBlur}>
-                        
-                        {this.props.metadata.selectOptions.map(o => 
+
+                        {this.props.metadata.selectOptions.map(o =>
                             <option value={o.value} key={o.value}>
                                 {o.displayValue}
                             </option>)}
                     </select> :
-                    
+
                     option.displayValue
                 }
             </div>

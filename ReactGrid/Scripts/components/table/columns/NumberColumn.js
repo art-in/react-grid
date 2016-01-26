@@ -1,7 +1,7 @@
-﻿import React from 'react'
+﻿import React from 'react';
 
 export default class NumberColumn extends React.Component {
-    
+
     static propTypes = {
         rowData: React.PropTypes.object.isRequired,
         data: React.PropTypes.oneOfType([

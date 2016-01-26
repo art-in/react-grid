@@ -1,7 +1,8 @@
-﻿import React from 'react'
-import ItemList from './ItemList'
-import itemsApi from '../api/items'
-import {css} from '../helpers/react-helpers'
+﻿import React from 'react';
+import {css} from '../helpers/react-helpers';
+
+import itemsApi from '../api/items';
+import ItemList from './ItemList';
 
 @css({
     main: {
@@ -24,10 +25,10 @@ export default class App extends React.Component {
 
     componentDidMount() {
         itemsApi.get()
-            .then(data => { this.setState({items: data}) });
+            .then(data => this.setState({items: data}));
     }
 
-    onItemsDelete = (itemsToDelete) => {
+    onItemsDelete = itemsToDelete => {
         let itemIdsToDeleteStr = itemsToDelete.map(i => i.Id).join(', ');
         
         if (confirm(`Delete items (${itemIdsToDeleteStr})?`)) {
@@ -38,8 +39,8 @@ export default class App extends React.Component {
         }
     };
 
-    onItemEdit = (item) => {
-        alert(`item edited: ${JSON.stringify(item)}`)
+    onItemEdit = item => {
+        alert(`item edited: ${JSON.stringify(item)}`);
     };
 
     render() {
