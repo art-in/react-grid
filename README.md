@@ -10,9 +10,10 @@
    * [x] tab - navigate cells
    * [x] ctrl+a - select all
    * [x] esc - de-select all
- - [x] cell editing
+ - [x] cell formatting/editing
    * [x] text
    * [x] number
+   * [x] date
    * [x] dropdown
  - [x] crossbrowser
    * [x] Chrome 47
