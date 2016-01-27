@@ -17,6 +17,7 @@ import {alphabetSorter} from './sorters';
         '& .table': {
             // disable selection (for batch selection with shift)
             'user-select': 'none',
+            'border': '1px solid lightgray',
 
             '& th, & td': {
                 'border-right': '1px solid lightgray'
