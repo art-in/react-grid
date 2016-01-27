@@ -1,20 +1,25 @@
 ﻿import React from 'react';
+import {css} from '../../../helpers/react-helpers';
 
-export default class NumberColumn extends React.Component {
-
+@css({
+    date: {
+        'white-space': 'nowrap'
+    }
+})
+export default class DateColumn extends React.Component {
+    
     static propTypes = {
         rowData: React.PropTypes.shape({
             editing: React.PropTypes.bool
         }).isRequired,
-        data: React.PropTypes.oneOfType([
-            React.PropTypes.string,
-            React.PropTypes.number
-        ]),
+        data: React.PropTypes.string,
         metadata: React.PropTypes.shape({
             columnName: React.PropTypes.string.isRequired,
             editable: React.PropTypes.bool
         }).isRequired
     };
+
+    classes = this.props.sheet.classes;
 
     onClick = e => {
         e.stopPropagation();
@@ -43,19 +48,30 @@ export default class NumberColumn extends React.Component {
     };
 
     render() {
+        if (isNaN(Date.parse(this.props.data))) {
+            console.error(`Invalid date string: '${this.props.data}'`);
+        }
+
+        let date = new Date(this.props.data);
+
+        let dateString = date.toISOString().match(/(.*)T/)[1];
+        let dateTimeString = 
+            `${date.toLocaleDateString()} ${date.toLocaleTimeString()}`;
+
         return (
-            <div>
+            <div className={this.classes.date}>
                 {this.props.metadata.editable && 
                     this.props.rowData.editing ?
 
                     <input ref='input'
-                        type='number'
-                        defaultValue={this.props.data}
+                        // no support for datetime for now
+                        type='date'
+                        defaultValue={dateString}
                         onClick={this.onClick}
                         onKeyDown={this.onKeyDown}
                         onBlur={this.onBlur} /> :
 
-                    this.props.data}
+                    dateTimeString}
             </div>
         );
     }

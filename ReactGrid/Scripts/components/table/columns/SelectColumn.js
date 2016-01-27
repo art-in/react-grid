@@ -3,12 +3,16 @@
 export default class SelectColumn extends React.Component {
 
     static propTypes = {
-        rowData: React.PropTypes.object.isRequired,
+        rowData: React.PropTypes.shape({
+            editing: React.PropTypes.bool
+        }).isRequired,
         data: React.PropTypes.oneOfType([
             React.PropTypes.string,
             React.PropTypes.number
         ]),
         metadata: React.PropTypes.shape({
+            columnName: React.PropTypes.string.isRequired,
+            editable: React.PropTypes.bool,
             selectOptions: React.PropTypes.arrayOf(
                 React.PropTypes.shape({
                     value: React.PropTypes.number.isRequired,
@@ -53,7 +57,8 @@ export default class SelectColumn extends React.Component {
 
         return (
             <div>
-                {this.props.rowData.editing ?
+                {this.props.metadata.editable && 
+                    this.props.rowData.editing ?
 
                     <select ref={'select'}
                         defaultValue={this.props.data}

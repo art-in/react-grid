@@ -1,4 +1,6 @@
-﻿namespace ReactGrid.Models
+﻿using System;
+
+namespace ReactGrid.Models
 {
     public class Item
     {
@@ -7,5 +9,7 @@
         public string Name { get; set; }
 
         public ItemType Type { get; set; }
+
+        public DateTime CreatedDate { get; set; }
     }
 }

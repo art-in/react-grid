@@ -1,9 +1,10 @@
 ﻿import React from 'react';
 import ReactDOM from 'react-dom';
 import Griddle from 'griddle-react';
-import {css} from '../../helpers/react-helpers';
 import $ from 'jquery';
 import cx from 'classnames';
+
+import {css} from '../../helpers/react-helpers';
 import {alphabetSorter} from './sorters';
 
 @css({
@@ -11,33 +12,50 @@ import {alphabetSorter} from './sorters';
         // to get row offset relative to wrapper,
         // for appropriate scrolling
         'position': 'relative',
+        'outline': 'none',
 
         '& .table': {
             // disable selection (for batch selection with shift)
             'user-select': 'none',
 
-            '& thead th:hover': {
-                cursor: 'pointer'
+            '& th, & td': {
+                'border-right': '1px solid lightgray'
             },
-            '& tbody tr:hover': {
-                'background-color': '#f3f3f3',
-                'cursor': 'pointer'
-            },
-            '& tbody tr:not(.editing).selected': {
-                'background-color': '#337AB7',
-                'color': 'white'
-            },
-            '& tbody td': {
-                padding: '2px 5px'
-            },
-            '& tbody tr.editing': {
-                'background-color': '#F1F1F1',
+            '& thead': {
+                'background-color': '#a6a6a6',
+                'color': 'white',
 
-                '& input, & select': {
-                    'color': 'black',
-                    'background-color': 'white',
-                    'border': 'none',
-                    'width': '100%'
+                '& th': {
+                    'font-weight': 'normal',
+
+                    '&:hover': {
+                        cursor: 'pointer'
+                    } 
+                }
+            },
+            '& tbody': {
+                '& tr': {
+                    '&:hover': {
+                        'background-color': '#f3f3f3',
+                        'cursor': 'pointer'
+                    },
+                    '&:not(.editing).selected': {
+                        'background-color': '#538dd5',
+                        'color': 'white'
+                    },
+                    '&.editing': {
+                        'background-color': '#F1F1F1',
+
+                        '& input, & select': {
+                            'color': 'black',
+                            'background-color': 'white',
+                            'border': 'none',
+                            'width': '100%'
+                        }
+                    }
+                },
+                '& td': {
+                    padding: '2px 5px'
                 }
             },
             '& .footer-container': {
@@ -391,7 +409,7 @@ export default class DataTable extends React.Component {
                     // focus table
                     $(ReactDOM.findDOMNode(this.refs.wrapper)).focus();
                 } else if (this.state.columnMetadata
-                    .some(c => c.customComponent)) {
+                    .some(c => c.editable)) {
                     // make editable
                     this.state.data.forEach(r => delete r.selected);
                     this.state.data.forEach(r => delete r.editing);

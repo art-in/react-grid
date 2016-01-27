@@ -3,12 +3,17 @@
 export default class TextColumn extends React.Component {
     
     static propTypes = {
-        rowData: React.PropTypes.object.isRequired,
+        rowData: React.PropTypes.shape({
+            editing: React.PropTypes.bool
+        }).isRequired,
         data: React.PropTypes.oneOfType([
             React.PropTypes.string,
             React.PropTypes.number
         ]),
-        metadata: React.PropTypes.object.isRequired
+        metadata: React.PropTypes.shape({
+            columnName: React.PropTypes.string.isRequired,
+            editable: React.PropTypes.bool
+        }).isRequired
     };
 
     onClick = e => {
@@ -34,7 +39,8 @@ export default class TextColumn extends React.Component {
     render() {
         return (
             <div>
-                {this.props.rowData.editing ?
+                {this.props.metadata.editable && 
+                    this.props.rowData.editing ?
 
                     <input ref='input'
                         type='text'

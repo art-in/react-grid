@@ -1,4 +1,5 @@
 ﻿using ReactGrid.Models;
+using System;
 using System.Collections.Generic;
 using System.Web.Http;
 
@@ -16,7 +17,8 @@ namespace ReactGrid.Controllers.api
                 {
                     Id = i,
                     Name = "Item " + i,
-                    Type = (ItemType)(i % 3)
+                    Type = (ItemType)(i % 3),
+                    CreatedDate = DateTime.Now.AddDays(i)
                 });
             }
 

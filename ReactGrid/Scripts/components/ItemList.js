@@ -10,6 +10,7 @@ import DataTable from './table/DataTable';
 import TextColumn from './table/columns/TextColumn';
 import NumberColumn from './table/columns/NumberColumn';
 import SelectColumn from './table/columns/SelectColumn';
+import DateColumn from './table/columns/DateColumn';
 
 @css({
     list: {}
@@ -96,17 +97,25 @@ export default class ItemList extends React.Component {
                     cssClassName: 'col-md-3',
                     sorter: numericSorter,
                     initialSort: true,
-                    customComponent: NumberColumn
+                    customComponent: NumberColumn,
+                    editable: true
                 }, {
                     columnName: 'Name',
-                    cssClassName: 'col-md-6',
-                    customComponent: TextColumn
+                    cssClassName: 'col-md-3',
+                    customComponent: TextColumn,
+                    editable: true
                 }, {
                     columnName: 'Type',
                     cssClassName: 'col-md-3',
                     sorter: numericSorter,
                     customComponent: SelectColumn,
-                    selectOptions: itemTypeOptions
+                    selectOptions: itemTypeOptions,
+                    editable: true
+                }, {
+                    columnName: 'CreatedDate',
+                    cssClassName: 'col-md-3',
+                    customComponent: DateColumn,
+                    editable: true
                 }]}
                 className={cx(this.classes.list, this.props.className)}
                 paging={false}

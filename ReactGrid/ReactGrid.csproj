@@ -110,6 +110,7 @@
     <Content Include="Scripts\components\App.js" />
     <Content Include="Scripts\boot.js" />
     <Content Include="Scripts\components\ItemList.js" />
+    <Content Include="Scripts\components\table\columns\DateColumn.js" />
     <Content Include="Scripts\components\table\columns\NumberColumn.js" />
     <Content Include="Scripts\components\table\columns\SelectColumn.js" />
     <Content Include="Scripts\components\table\DataTable.js" />
