@@ -103,7 +103,7 @@ export default class DataTable extends React.Component {
         onAllRowsSelected: React.PropTypes.func.isRequired,
         onAllRowsDeselected: React.PropTypes.func.isRequired,
         onBlur: React.PropTypes.func.isRequired,
-        onRowEdit: React.PropTypes.func.isRequired
+        onRowEdit: React.PropTypes.func
     };
 
     static defaultProps = {
@@ -130,24 +130,33 @@ export default class DataTable extends React.Component {
     classes = this.props.sheet.classes;
 
     componentWillMount() {
-        this.state.columns = this.props.columns
-            .filter(c => c.visible === undefined || c.visible)
-            .map(c => c.columnName);
-        
-        this.state.columnMetadata = this.props.columns;
+        this.handleProps(this.props);
     }
 
     componentWillReceiveProps(nextProps) {
-        this.state.data = nextProps.data;
+        this.handleProps(nextProps);
+    }
 
-        if (!nextProps.paging) {
+    handleProps(props) {
+        this.state.data = props.data;
+
+        // columns
+        this.state.columns = props.columns
+            .filter(c => c.visible === undefined || c.visible)
+            .map(c => c.columnName);
+        
+        this.state.columnMetadata = props.columns;
+
+        // page
+        if (!props.paging) {
             this.state.pageSize = Infinity;
         }
         
+        // sort
         let sortColumnName = this.state.sortColumnName;
         if (!sortColumnName) {
             // get initial sort column
-            let columnData = nextProps.columns.find(c => c.initialSort);
+            let columnData = props.columns.find(c => c.initialSort);
             if (columnData) {
                 sortColumnName = columnData.columnName;
             }
