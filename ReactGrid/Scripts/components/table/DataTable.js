@@ -111,7 +111,8 @@ export default class DataTable extends React.Component {
 
     static defaultProps = {
         paging: true,
-        noDataMessage: 'No data to display'
+        noDataMessage: 'No data to display',
+        batchSelect: true
     };
 
     state = {
@@ -288,7 +289,7 @@ export default class DataTable extends React.Component {
             
             // batch
             let selectedRow = this.state.pageData.find(r => r.selected);
-            if (e.shiftKey && selectedRow) {
+            if (selectedRow && e.shiftKey && this.props.batchSelect) {
                 
                 let rowFromIdx = this.state.pageData.indexOf(selectedRow);
                 let rowToIdx = this.state.pageData.indexOf(row);
@@ -310,7 +311,7 @@ export default class DataTable extends React.Component {
             } else {
                 let rowSelected = row.selected;
 
-                if (!e.ctrlKey) {
+                if (!e.ctrlKey || !this.props.batchSelect) {
                     // de-select all the rows
                     this.state.data.forEach(i => delete i.selected);
                 }
@@ -450,17 +451,17 @@ export default class DataTable extends React.Component {
             break;
         case 38:
             // arrow up
-            this.moveNextRow(false, e.shiftKey);
+            this.moveNextRow(false, e.shiftKey && this.props.batchSelect);
             e.preventDefault();
             break;
         case 40:
             // arrow down
-            this.moveNextRow(true, e.shiftKey);
+            this.moveNextRow(true, e.shiftKey && this.props.batchSelect);
             e.preventDefault();
             break;
         case 65:
             // ctrl+a
-            if (e.ctrlKey) {
+            if (e.ctrlKey && this.props.batchSelect) {
                 // select all on current page
                 this.state.pageData.forEach(r => r.selected = true);
                 this.props.onAllRowsSelected();
