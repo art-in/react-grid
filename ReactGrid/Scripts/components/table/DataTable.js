@@ -127,6 +127,7 @@ export default class DataTable extends React.Component {
         activeRowData: null
     };
 
+    isComponentMounted = false;
     classes = this.props.sheet.classes;
 
     componentWillMount() {
@@ -174,10 +175,12 @@ export default class DataTable extends React.Component {
 
     componentDidMount() {
         document.addEventListener('selectstart', this.onSelectStart);
+        this.isComponentMounted = true;
     }
 
     componentWillUnmount() {
         document.removeEventListener('selectstart', this.onSelectStart);
+        this.isComponentMounted = false;
     }
 
     onSelectStart = e => {
@@ -577,6 +580,11 @@ export default class DataTable extends React.Component {
         // wait a while to get currently focused element
         // FF: should wait >= 100ms
         setTimeout(() => {
+            if (!this.isComponentMounted) {
+                // by this time it may be unmounted already
+                return;
+            }
+
             let $wrapper = $(ReactDOM.findDOMNode(this.refs.wrapper));
             let $focusedElement = $(document.activeElement);
 
