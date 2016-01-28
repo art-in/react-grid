@@ -56,7 +56,10 @@ import {alphabetSorter} from './sorters';
                     }
                 },
                 '& td': {
-                    padding: '2px 5px'
+                    'padding': '2px 5px',
+                    'white-space': 'nowrap',
+                    'max-width': '320px',
+                    'overflow': 'hidden'
                 }
             },
             '& .footer-container': {
