@@ -52,7 +52,8 @@ export default class SelectColumn extends React.Component {
             .find(o => o.value === this.props.data);
 
         if (!option) {
-            throw Error(`Option with value '${this.props.data}' was not found`);
+            throw Error(
+                `Select option with value '${this.props.data}' was not found`);
         }
 
         return (

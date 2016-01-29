@@ -152,6 +152,14 @@ export default class DataTable extends React.Component {
         
         this.state.columnMetadata = props.columns;
 
+        this.state.columnMetadata.forEach(column => {
+            if (column.editable && !column.customComponent) {
+                console.warn(
+                    `Column '${column.columnName}' is editable, ` +
+                    `but does not have custom component.`);
+            }
+        });
+
         // page
         if (!props.paging) {
             this.state.pageSize = Infinity;
@@ -425,8 +433,7 @@ export default class DataTable extends React.Component {
 
                     // focus table
                     $(ReactDOM.findDOMNode(this.refs.wrapper)).focus();
-                } else if (this.state.columnMetadata
-                    .some(c => c.editable)) {
+                } else if (this.state.columnMetadata.some(c => c.editable)) {
                     // make editable
                     this.state.data.forEach(r => delete r.selected);
                     this.state.data.forEach(r => delete r.editing);
