@@ -12,7 +12,6 @@ import {alphabetSorter} from './sorters';
         // to get row offset relative to wrapper,
         // for appropriate scrolling
         'position': 'relative',
-        'outline': 'none',
 
         '& .table': {
             // disable selection (for batch selection with shift)
@@ -119,8 +118,7 @@ export default class DataTable extends React.Component {
     state = {
         columns: [],
         columnMetadata: [],
-
-        data: [],
+        
         pageData: [],
         pageCurrent: 0,
         pageSize: 5,
@@ -129,11 +127,19 @@ export default class DataTable extends React.Component {
         sortAscending: true,
 
         // currently selected row
-        activeRowData: null
+        activeRowData: null,
+        
+        // prev data of currently beeing edited row
+        editingRowPrevData: null
     };
 
     isComponentMounted = false;
     classes = this.props.sheet.classes;
+
+    clone(obj) {
+        // clone (simple edition)
+        return JSON.parse(JSON.stringify(obj));
+    }
 
     componentWillMount() {
         this.handleProps(this.props);
@@ -144,7 +150,6 @@ export default class DataTable extends React.Component {
     }
 
     handleProps(props) {
-        this.state.data = props.data;
 
         // columns
         this.state.columns = props.columns
@@ -175,9 +180,22 @@ export default class DataTable extends React.Component {
                 sortColumnName = columnData.columnName;
             }
         }
+                
+        // check editing rows count
+        let editingRows = props.data.filter(r => r.editing);
+        if (editingRows.length > 1) {
+            console.warn('More than one row is in editing state');
+        }
+
+        // preserve prev state of edited row
+        let editingRowData = props.data.find(r => r.editing);
+        if (editingRowData && !this.state.editingRowPrevData) {
+            this.state.editingRowPrevData = 
+                this.clone(editingRowData);
+        }
 
         this.updatePageData(
-            this.state.data,
+            props.data,
             this.state.columnMetadata,
             null,
             sortColumnName,
@@ -223,7 +241,7 @@ export default class DataTable extends React.Component {
         data, columnsMetadata, filterString, 
         sortColumn, sortAscending, 
         pageCurrent, pageSize) {
-       
+
         // filter
         if (filterString) {
             throw Error('Filtering not implemented');
@@ -275,8 +293,12 @@ export default class DataTable extends React.Component {
     }
 
     onRowClick = (rowComponent, e) => {
+
+        this.onSaveChanges();
+        this.props.data.forEach(r => delete r.editing);
+
         let row = rowComponent.props.data;
-        
+
         let {contextMenu} = this.state;
         
         // context menu event
@@ -284,24 +306,24 @@ export default class DataTable extends React.Component {
             delete this.state.contextMenu;
 
             if (!row.selected) {
-                this.state.data.forEach(i => delete i.selected);
+                this.props.data.forEach(i => delete i.selected);
             }
 
             row.selected = true;
 
             // save target rows
-            let selectedRows = this.state.data.filter(row => row.selected);
+            let selectedRows = this.props.data.filter(row => row.selected);
             this.props.onContextMenu(contextMenu.pos, selectedRows);
 
         // select rows
         } else {
             
             // batch
-            let selectedRow = this.state.pageData.find(r => r.selected);
+            let selectedRow = this.props.data.find(r => r.selected);
             if (selectedRow && e.shiftKey && this.props.batchSelect) {
                 
-                let rowFromIdx = this.state.pageData.indexOf(selectedRow);
-                let rowToIdx = this.state.pageData.indexOf(row);
+                let rowFromIdx = this.props.data.indexOf(selectedRow);
+                let rowToIdx = this.props.data.indexOf(row);
 
                 let goForward = rowFromIdx < rowToIdx;
 
@@ -309,7 +331,7 @@ export default class DataTable extends React.Component {
                 let i = rowFromIdx;
                 let done;
                 while (!done) {
-                    let currentRow = this.state.pageData[i];
+                    let currentRow = this.props.data[i];
                     currentRow.selected = true;
                     
                     i = goForward ? ++i : --i;
@@ -322,7 +344,7 @@ export default class DataTable extends React.Component {
 
                 if (!e.ctrlKey || !this.props.batchSelect) {
                     // de-select all the rows
-                    this.state.data.forEach(i => delete i.selected);
+                    this.props.data.forEach(i => delete i.selected);
                 }
 
                 // select target row
@@ -333,7 +355,6 @@ export default class DataTable extends React.Component {
         }
 
         this.state.activeRowData = row;
-        this.state.pageData.forEach(r => delete r.editing);
         
         // focus table
         // IE: when selecting row table does not get focused
@@ -366,8 +387,8 @@ export default class DataTable extends React.Component {
 
     onSetPage = pageNumber => {
         this.updatePageData(
-            this.state.data,
-            this.props.columns,
+            this.props.data,
+            this.state.columnMetadata,
             null,
             this.state.sortColumnName,
             this.state.sortAscending,
@@ -383,8 +404,8 @@ export default class DataTable extends React.Component {
         }
 
         this.updatePageData(
-            this.state.data,
-            this.props.columns,
+            this.props.data,
+            this.state.columnMetadata,
             null,
             sort,
             sortAscending,
@@ -398,8 +419,8 @@ export default class DataTable extends React.Component {
 
     onSetPageSize = size => {
         this.updatePageData(
-            this.state.data,
-            this.props.columns,
+            this.props.data,
+            this.state.columnMetadata,
             null,
             this.state.sortColumnName,
             this.state.sortAscending,
@@ -408,42 +429,29 @@ export default class DataTable extends React.Component {
     };
 
     onKeyDown = e => {
-
+         
         switch (e.keyCode) {
         case 13:
             // enter
-            let selectedRowData = this.state.pageData.find(r => r.selected);
+            let selectedRowData = this.props.data.find(r => r.selected);
             if (selectedRowData) {
                 if (selectedRowData.editing) {
                     // save edit
-                    delete selectedRowData.editing;
+                    this.onSaveChanges();
 
-                    this.props.onRowEdit(selectedRowData);
-
-                    // resort
-                    this.updatePageData(
-                        this.state.data,
-                        this.props.columns,
-                        null,
-                        this.state.sortColumnName,
-                        this.state.sortAscending,
-                        this.state.pageCurrent,
-                        this.state.pageSize);
-
-                    this.state.activeRowData = selectedRowData;
-
-                    // focus table
-                    $(ReactDOM.findDOMNode(this.refs.wrapper)).focus();
                 } else if (this.state.columnMetadata.some(c => c.editable)) {
                     // make editable
-                    this.state.data.forEach(r => delete r.selected);
-                    this.state.data.forEach(r => delete r.editing);
+                    this.props.data.forEach(r => delete r.selected);
+                    this.props.data.forEach(r => delete r.editing);
+
+                    // preserve prev row data
+                    this.state.editingRowPrevData = this.clone(selectedRowData);
                     
+                    selectedRowData.editing = true;
+                    selectedRowData.selected = true;
+
                     this.props.onAllRowsDeselected();
                     this.props.onRowEditing(selectedRowData);
-
-                    selectedRowData.selected = true;
-                    selectedRowData.editing = true;
                 }
 
                 this.forceUpdate(); 
@@ -451,29 +459,53 @@ export default class DataTable extends React.Component {
             break;
         case 27:
             // esc
-            // de-select all
-            this.state.data.forEach(r => delete r.selected);
-            this.state.data.forEach(r => delete r.editing);
-            this.props.onAllRowsDeselected();
+            let editingRowData = this.props.data.find(r => r.editing);
+            
+            if (editingRowData) {
+
+                // exit edit mode
+                this.onDiscardChanges();
+
+                this.props.data.forEach(r => delete r.selected);
+                this.props.data.forEach(r => delete r.editing);
+
+                // select just edited row
+                editingRowData.selected = true;
+            } else {
+                // de-select all
+                this.props.data.forEach(r => delete r.selected);
+                this.props.data.forEach(r => delete r.editing);
+            
+                this.props.onAllRowsDeselected();
+            }
+            
+            this.forceUpdate();
+            e.preventDefault();            
+
             // focus table
             $(ReactDOM.findDOMNode(this.refs.wrapper)).focus();
-            this.forceUpdate();
             break;
         case 38:
             // arrow up
+            this.onSaveChanges();
+            this.props.data.forEach(r => delete r.editing);
             this.moveNextRow(false, e.shiftKey && this.props.batchSelect);
             e.preventDefault();
             break;
         case 40:
             // arrow down
+            this.onSaveChanges();
+            this.props.data.forEach(r => delete r.editing); 
             this.moveNextRow(true, e.shiftKey && this.props.batchSelect);
             e.preventDefault();
             break;
         case 65:
             // ctrl+a
             if (e.ctrlKey && this.props.batchSelect) {
+                this.props.data.forEach(r => delete r.editing);                
+
                 // select all on current page
-                this.state.pageData.forEach(r => r.selected = true);
+                this.props.data.forEach(r => r.selected = true);
                 this.props.onAllRowsSelected();
                 this.forceUpdate();
                 e.preventDefault();
@@ -483,9 +515,10 @@ export default class DataTable extends React.Component {
             // any other key
         }
 
-    };
+    };  
 
     moveNextRow(down, batch) {
+        let {data} = this.props;
         let {pageData} = this.state;
 
         // get selected row index
@@ -507,15 +540,15 @@ export default class DataTable extends React.Component {
 
         if ((down && selectedIdx === pageData.length - 1) ||
             (!down && selectedIdx === 0)) {
-            // no move outside
+            // no move outside current page
             return;
         }
 
         if (!batch) {
-            pageData.forEach(r => delete r.selected);
+            data.forEach(r => delete r.selected);
         }
 
-        pageData.forEach(r => delete r.editing);
+        data.forEach(r => delete r.editing);
         
         // get index of row to select next
         let nextToSelectIdx;
@@ -544,9 +577,13 @@ export default class DataTable extends React.Component {
         let activeRowData = this.state.activeRowData;
         if (activeRowData) {
             delete this.state.activeRowData;
-
-            let rowIdx = this.state.pageData.indexOf(activeRowData);
             
+            let rowIdx = this.props.data.indexOf(activeRowData);
+            
+            if (rowIdx === -1) {
+                throw Error('Undable to find active row');
+            }    
+        
             let $wrapperNode = $(ReactDOM.findDOMNode(this.refs.wrapper));
             let $tableNode = $(ReactDOM.findDOMNode(this.refs.table));
             let $rowNode = $tableNode.find('.data-row').eq(rowIdx);
@@ -579,9 +616,9 @@ export default class DataTable extends React.Component {
         }
 
         // focus first input in editing row
-        let editingRowData = this.state.data.find(r => r.editing);
+        let editingRowData = this.props.data.find(r => r.editing);
         if (editingRowData) {
-            let rowIdx = this.state.pageData.indexOf(editingRowData);
+            let rowIdx = this.props.data.indexOf(editingRowData);
 
             let $tableNode = $(ReactDOM.findDOMNode(this.refs.table));
             let $rowNode = $tableNode.find('.data-row').eq(rowIdx);
@@ -589,6 +626,57 @@ export default class DataTable extends React.Component {
             $rowNode.find('input:first').focus().select();
         }
     }
+
+    onSaveChanges = () => { 
+        let editedRowData = this.props.data.find(r => r.editing);
+
+        // if some row is beeing edited...
+        if (editedRowData) {
+            // remove flags-junk before sending to event
+            delete editedRowData.editing;
+            delete editedRowData.selected;
+
+            this.props.onRowEdit(editedRowData);
+
+            // re-sort
+            this.updatePageData(
+                this.props.data,
+                this.state.columnMetadata,
+                null,
+                this.state.sortColumnName,
+                this.state.sortAscending,
+                this.state.pageCurrent,
+                this.state.pageSize);
+
+            editedRowData.selected = true;
+            this.state.activeRowData = editedRowData;
+            this.state.editingRowPrevData = null;
+
+            // focus table
+            $(ReactDOM.findDOMNode(this.refs.wrapper)).focus();
+        }
+    };
+
+    onDiscardChanges = () => {
+        let editingRow = this.props.data.find(r => r.editing);
+
+        // if some row is beeing edited...
+        if (editingRow) {
+            if (!this.state.editingRowPrevData) {
+                throw Error('No prev row data to discard changes');
+            }
+            
+            // rewrite edited row data with previous value
+            Object.assign(
+                editingRow, 
+                this.state.editingRowPrevData);
+
+            // make sure 'editing' flag is in place
+            editingRow.editing = true;
+
+            this.state.editingRowPrevData = null;
+        }
+    };
 
     onBlur = () => {
         // wait a while to get currently focused element
@@ -607,8 +695,10 @@ export default class DataTable extends React.Component {
                 !$focusedElement.is($wrapper)) {
 
                 // blur
-                this.state.data.forEach(r => delete r.selected);
-                this.state.data.forEach(r => delete r.editing);
+                this.onDiscardChanges();
+
+                this.props.data.forEach(r => delete r.selected);
+                this.props.data.forEach(r => delete r.editing);
 
                 this.props.onBlur();
                 this.forceUpdate();
@@ -626,7 +716,7 @@ export default class DataTable extends React.Component {
                     {['editing']: rowData.editing});
             }
         };
-        
+
         return (
             <div ref='wrapper' tabIndex={0}
                  className={cx(this.classes.wrapper, this.props.className)}

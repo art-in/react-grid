@@ -25,12 +25,11 @@ export default class SelectColumn extends React.Component {
         e.stopPropagation();
     };
 
-    onKeyDown = e => {
-        if (e.keyCode === 13) {
-            // enter
-            this.save();
-        }
+    onChange = () => {
+        this.save();
+    };
 
+    onKeyDown = e => {
         if (e.keyCode === 38 || e.keyCode === 40) {
             // up/down arrows
             // do not propagate, change value instead
@@ -38,7 +37,7 @@ export default class SelectColumn extends React.Component {
         }
     };
 
-    onBlur = () => {
+    onKeyUp = () => {
         this.save();
     };
 
@@ -64,8 +63,9 @@ export default class SelectColumn extends React.Component {
                     <select ref={'select'}
                         defaultValue={this.props.data}
                         onClick={this.onClick}
+                        onChange={this.onChange}
                         onKeyDown={this.onKeyDown}
-                        onBlur={this.onBlur}>
+                        onKeyUp={this.onKeyUp}>
 
                         {this.props.metadata.selectOptions.map(o =>
                             <option value={o.value} key={o.value}>

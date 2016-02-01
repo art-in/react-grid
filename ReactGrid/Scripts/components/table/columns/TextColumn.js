@@ -20,14 +20,7 @@ export default class TextColumn extends React.Component {
         e.stopPropagation();
     };
 
-    onKeyDown = e => {
-        if (e.keyCode === 13) {
-            // enter
-            this.save();
-        }
-    };
-
-    onBlur = () => {
+    onKeyUp = () => {
         this.save();
     };
 
@@ -46,8 +39,7 @@ export default class TextColumn extends React.Component {
                         type='text'
                         defaultValue={this.props.data}
                         onClick={this.onClick}
-                        onKeyDown={this.onKeyDown}
-                        onBlur={this.onBlur} /> :
+                        onKeyUp={this.onKeyUp} /> :
 
                     this.props.data}
             </div>

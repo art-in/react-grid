@@ -25,20 +25,18 @@ export default class DateColumn extends React.Component {
         e.stopPropagation();
     };
 
-    onKeyDown = e => {
-        if (e.keyCode === 13) {
-            // enter
-            this.save();
-        }
+    onChange = () => {
+        this.save();
+    };
 
+    onKeyDown = e => {
         if (e.keyCode === 38 || e.keyCode === 40) {
-            // up/down arrows
             // do not propagate, change value instead
             e.stopPropagation();
         }
     };
 
-    onBlur = () => {
+    onKeyUp = () => {
         this.save();
     };
 
@@ -68,8 +66,9 @@ export default class DateColumn extends React.Component {
                         type='date'
                         defaultValue={dateString}
                         onClick={this.onClick}
+                        onChange={this.onChange}
                         onKeyDown={this.onKeyDown}
-                        onBlur={this.onBlur} /> :
+                        onKeyUp={this.onKeyUp} /> :
 
                     dateTimeString}
             </div>

@@ -64,6 +64,10 @@ export default class ItemList extends React.Component {
         case 'SingAction':
             alert(`action for single row: ${targetItemsStr}`);
             break;
+        case 'Edit':
+            let item = contextMenu.targetItems[0];
+            item.editing = true;
+            break;
         case 'Delete':
             this.props.onItemsDelete(contextMenu.targetItems);
             break;
@@ -147,6 +151,9 @@ export default class ItemList extends React.Component {
                             [{
                                 title: 'single item selected',
                                 onClick: menuAction('SingAction')
+                            }, {
+                                title: 'edit',
+                                onClick: menuAction('Edit')
                             }, {
                                 title: 'delete',
                                 onClick: menuAction('Delete')

@@ -20,12 +20,11 @@ export default class NumberColumn extends React.Component {
         e.stopPropagation();
     };
 
-    onKeyDown = e => {
-        if (e.keyCode === 13) {
-            // enter
-            this.save();
-        }
+    onChange = () => {
+        this.save();
+    };
 
+    onKeyDown = e => {
         if (e.keyCode === 38 || e.keyCode === 40) {
             // up/down arrows
             // do not propagate, change value instead
@@ -33,7 +32,7 @@ export default class NumberColumn extends React.Component {
         }
     };
 
-    onBlur = () => {
+    onKeyUp = () => {
         this.save();
     };
 
@@ -52,8 +51,9 @@ export default class NumberColumn extends React.Component {
                         type='number'
                         defaultValue={this.props.data}
                         onClick={this.onClick}
+                        onChange={this.onChange}
                         onKeyDown={this.onKeyDown}
-                        onBlur={this.onBlur} /> :
+                        onKeyUp={this.onKeyUp} /> :
 
                     this.props.data}
             </div>
