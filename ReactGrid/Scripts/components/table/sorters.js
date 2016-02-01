@@ -1,4 +1,27 @@
-﻿export let alphabetSorter = {
+﻿/**
+ * Reliable comparer for cases when 
+ * target object properties are equal.
+ * 
+ * @param {object} item1 - first
+ * @param {object} item2 - second
+ * @return {number} -1/0/1
+ */
+function hashComparer(item1, item2) {
+    let item1str = JSON.stringify(item1);
+    let item2str = JSON.stringify(item2);
+
+    if (item1str > item2str) {
+        return 1;
+    }
+
+    if (item1str < item2str) {
+        return -1;
+    }
+
+    return 0;
+}
+
+export let alphabetSorter = {
     /**
      * Alphabet sorter func for objects
      * @param {string} sortProp - property to sort on
@@ -17,7 +40,7 @@
                 return -1;
             }
 
-            return 0;
+            return hashComparer(item1, item2);
         };
     }
 };
@@ -30,8 +53,18 @@ export let numericSorter = {
      */
     getComparer(sortProp) {
         return (item1, item2) => {
-            return parseInt(item1[sortProp], 10) - 
-                   parseInt(item2[sortProp], 10);
+            let item1int = parseInt(item1[sortProp]);
+            let item2int = parseInt(item2[sortProp]);
+
+            if (item1int > item2int) {
+                return 1;
+            }
+
+            if (item1int < item2int) {
+                return -1;
+            }
+
+            return hashComparer(item1, item2);
         };
     }
 };
