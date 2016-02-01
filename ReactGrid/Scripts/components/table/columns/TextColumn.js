@@ -16,17 +16,17 @@ export default class TextColumn extends React.Component {
         }).isRequired
     };
 
+    save = () => {
+        let value = this.refs.input.value;
+        this.props.rowData[this.props.metadata.columnName] = value;
+    };
+
     onClick = e => {
         e.stopPropagation();
     };
 
-    onKeyUp = () => {
+    onChange = () => {
         this.save();
-    };
-
-    save = () => {
-        let value = this.refs.input.value;
-        this.props.rowData[this.props.metadata.columnName] = value;
     };
 
     render() {
@@ -38,8 +38,8 @@ export default class TextColumn extends React.Component {
                     <input ref='input'
                         type='text'
                         defaultValue={this.props.data}
-                        onClick={this.onClick}
-                        onKeyUp={this.onKeyUp} /> :
+                        onChange={this.onChange}
+                        onClick={this.onClick} /> :
 
                     this.props.data}
             </div>

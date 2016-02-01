@@ -21,12 +21,17 @@ export default class SelectColumn extends React.Component {
         }).isRequired
     };
 
-    onClick = e => {
-        e.stopPropagation();
+    save = () => {
+        let value = parseInt(this.refs.select.value, 10);
+        this.props.rowData[this.props.metadata.columnName] = value;
     };
 
     onChange = () => {
         this.save();
+    };
+
+    onClick = e => {
+        e.stopPropagation();
     };
 
     onKeyDown = e => {
@@ -35,15 +40,6 @@ export default class SelectColumn extends React.Component {
             // do not propagate, change value instead
             e.stopPropagation();
         }
-    };
-
-    onKeyUp = () => {
-        this.save();
-    };
-
-    save = () => {
-        let value = parseInt(this.refs.select.value, 10);
-        this.props.rowData[this.props.metadata.columnName] = value;
     };
 
     render() {
@@ -64,8 +60,7 @@ export default class SelectColumn extends React.Component {
                         defaultValue={this.props.data}
                         onClick={this.onClick}
                         onChange={this.onChange}
-                        onKeyDown={this.onKeyDown}
-                        onKeyUp={this.onKeyUp}>
+                        onKeyDown={this.onKeyDown}>
 
                         {this.props.metadata.selectOptions.map(o =>
                             <option value={o.value} key={o.value}>

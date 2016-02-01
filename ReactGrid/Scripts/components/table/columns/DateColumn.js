@@ -21,12 +21,17 @@ export default class DateColumn extends React.Component {
 
     classes = this.props.sheet.classes;
 
-    onClick = e => {
-        e.stopPropagation();
+    save = () => {
+        let value = this.refs.input.value;
+        this.props.rowData[this.props.metadata.columnName] = value;
     };
 
     onChange = () => {
         this.save();
+    };
+    
+    onClick = e => {
+        e.stopPropagation();
     };
 
     onKeyDown = e => {
@@ -34,15 +39,6 @@ export default class DateColumn extends React.Component {
             // do not propagate, change value instead
             e.stopPropagation();
         }
-    };
-
-    onKeyUp = () => {
-        this.save();
-    };
-
-    save = () => {
-        let value = this.refs.input.value;
-        this.props.rowData[this.props.metadata.columnName] = value;
     };
 
     render() {
@@ -67,8 +63,7 @@ export default class DateColumn extends React.Component {
                         defaultValue={dateString}
                         onClick={this.onClick}
                         onChange={this.onChange}
-                        onKeyDown={this.onKeyDown}
-                        onKeyUp={this.onKeyUp} /> :
+                        onKeyDown={this.onKeyDown} /> :
 
                     dateTimeString}
             </div>
