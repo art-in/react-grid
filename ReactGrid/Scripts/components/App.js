@@ -39,8 +39,12 @@ export default class App extends React.Component {
         }
     };
 
+    onItemEditing = item => {
+        console.log(`item editing: ${JSON.stringify(item)}`);
+    };
+
     onItemEdit = item => {
-        alert(`item edited: ${JSON.stringify(item)}`);
+        console.log(`item edited: ${JSON.stringify(item)}`);
     };
 
     render() {
@@ -49,6 +53,7 @@ export default class App extends React.Component {
                 <ItemList items={this.state.items}
                     className={this.classes.itemlist}
                     onItemsDelete={this.onItemsDelete}
+                    onItemEditing={this.onItemEditing}
                     onItemEdit={this.onItemEdit} />
             </main>
         );

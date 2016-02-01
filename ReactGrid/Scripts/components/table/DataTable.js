@@ -106,6 +106,7 @@ export default class DataTable extends React.Component {
         onAllRowsSelected: React.PropTypes.func.isRequired,
         onAllRowsDeselected: React.PropTypes.func.isRequired,
         onBlur: React.PropTypes.func.isRequired,
+        onRowEditing: React.PropTypes.func,
         onRowEdit: React.PropTypes.func
     };
 
@@ -437,8 +438,10 @@ export default class DataTable extends React.Component {
                     // make editable
                     this.state.data.forEach(r => delete r.selected);
                     this.state.data.forEach(r => delete r.editing);
+                    
                     this.props.onAllRowsDeselected();
-            
+                    this.props.onRowEditing(selectedRowData);
+
                     selectedRowData.selected = true;
                     selectedRowData.editing = true;
                 }

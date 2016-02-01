@@ -20,6 +20,7 @@ export default class ItemList extends React.Component {
     static propTypes = {
         items: React.PropTypes.array.isRequired,
         onItemsDelete: React.PropTypes.func.isRequired,
+        onItemEditing: React.PropTypes.func.isRequired,
         onItemEdit: React.PropTypes.func.isRequired
     };
 
@@ -76,6 +77,10 @@ export default class ItemList extends React.Component {
         this.forceUpdate();
     };
 
+    onTableRowEditing = item => {
+        this.props.onItemEditing(item);
+    };
+
     onTableRowEdit = item => {
         this.props.onItemEdit(item);
     };
@@ -124,6 +129,7 @@ export default class ItemList extends React.Component {
                 onAllRowsDeselected={this.hideContextMenu}
                 onAllRowsSelected={this.hideContextMenu}
                 onBlur={this.hideContextMenu}
+                onRowEditing={this.onTableRowEditing}
                 onRowEdit={this.onTableRowEdit}>
                 
                 {contextMenu.shown &&
