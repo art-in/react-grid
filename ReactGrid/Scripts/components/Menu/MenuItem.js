@@ -5,7 +5,8 @@ import {css} from '../../helpers/react-helpers';
     item: {
         'padding': '0 5px',
         '&:hover': {
-            'background-color': '#f3f3f3'
+            'background-color': '#f3f3f3',
+            'cursor': 'pointer'
         }
     }
 })
