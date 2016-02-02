@@ -53,14 +53,14 @@ export let numericSorter = {
      */
     getComparer(sortProp) {
         return (item1, item2) => {
-            let item1int = parseInt(item1[sortProp]);
-            let item2int = parseInt(item2[sortProp]);
+            let item1num = parseFloat(item1[sortProp], 10);
+            let item2num = parseFloat(item2[sortProp], 10);
 
-            if (item1int > item2int) {
+            if (item1num > item2num) {
                 return 1;
             }
 
-            if (item1int < item2int) {
+            if (item1num < item2num) {
                 return -1;
             }
 

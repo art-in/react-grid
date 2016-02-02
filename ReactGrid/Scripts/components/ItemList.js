@@ -107,6 +107,7 @@ export default class ItemList extends React.Component {
                     sorter: numericSorter,
                     initialSort: true,
                     customComponent: NumberColumn,
+                    min: 0,
                     editable: true
                 }, {
                     columnName: 'Name',
