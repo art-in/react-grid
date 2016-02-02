@@ -42,6 +42,10 @@ export default class SelectColumn extends React.Component {
         }
     };
 
+    shouldComponentUpdate(nextProps) {
+        return nextProps.data !== this.props.data;
+    }
+
     render() {
         let option = this.props.metadata.selectOptions
             .find(o => o.value === this.props.data);

@@ -29,6 +29,10 @@ export default class TextColumn extends React.Component {
         this.save();
     };
 
+    shouldComponentUpdate(nextProps) {
+        return nextProps.data !== this.props.data;
+    }
+
     render() {
         return (
             <div>

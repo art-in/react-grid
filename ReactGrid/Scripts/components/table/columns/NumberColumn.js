@@ -39,6 +39,10 @@ export default class NumberColumn extends React.Component {
         }
     };
 
+    shouldComponentUpdate(nextProps) {
+        return nextProps.data !== this.props.data;
+    }
+
     render() {
         return (
             <div>

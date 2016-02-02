@@ -41,6 +41,10 @@ export default class DateColumn extends React.Component {
         }
     };
 
+    shouldComponentUpdate(nextProps) {
+        return nextProps.data !== this.props.data;
+    }
+
     render() {
         if (isNaN(Date.parse(this.props.data))) {
             console.error(`Invalid date string: '${this.props.data}'`);
