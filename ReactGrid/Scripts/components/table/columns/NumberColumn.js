@@ -19,7 +19,7 @@ export default class NumberColumn extends React.Component {
     };
 
     save = () => {
-        let value = this.refs.input.value;
+        let value = parseFloat(this.refs.input.value, 10);
         this.props.rowData[this.props.metadata.columnName] = value;
     };
 
