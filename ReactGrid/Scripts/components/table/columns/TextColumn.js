@@ -30,7 +30,10 @@ export default class TextColumn extends React.Component {
     };
 
     shouldComponentUpdate(nextProps) {
-        return nextProps.data !== this.props.data;
+        return nextProps.data !== this.props.data ||
+            nextProps.rowData.editing !== this.props.rowData.editing ||
+            nextProps.metadata.columnName !== this.props.metadata.columnName ||
+            nextProps.metadata.editable !== this.props.metadata.editable;
     }
 
     render() {
