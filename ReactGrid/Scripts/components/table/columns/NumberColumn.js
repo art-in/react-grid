@@ -12,7 +12,9 @@ export default class NumberColumn extends React.Component {
         ]),
         metadata: React.PropTypes.shape({
             columnName: React.PropTypes.string.isRequired,
-            editable: React.PropTypes.bool
+            editable: React.PropTypes.bool,
+            min: React.PropTypes.number.isRequired,
+            max: React.PropTypes.number
         }).isRequired
     };
 
@@ -45,6 +47,8 @@ export default class NumberColumn extends React.Component {
 
                     <input ref='input'
                         type='number'
+                        min={this.props.metadata.min}
+                        max={this.props.metadata.max}
                         defaultValue={this.props.data}
                         onClick={this.onClick}
                         onChange={this.onChange}
