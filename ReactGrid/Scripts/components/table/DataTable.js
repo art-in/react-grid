@@ -643,6 +643,12 @@ export default class DataTable extends React.Component {
                 let diff = (rowOffsetTop + rowHeight) - 
                     (scrollTop + scrollerHeight) + padding;
 
+                if (this.props.optimization) {
+                    // HACK: griddle incorrectly calculates top scroll
+                    // so we have to add height of one more row
+                    diff += rowHeight;
+                }
+
                 if (diff > 0) {
                     // row is below the scroll frame
                     $scrollerNode.scrollTop(scrollTop + diff);
