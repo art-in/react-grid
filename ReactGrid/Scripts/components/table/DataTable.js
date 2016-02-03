@@ -13,10 +13,23 @@ import {alphabetSorter} from './sorters';
         // for appropriate scrolling
         'position': 'relative',
 
+        '&:focus': {
+            outline: '2px solid #84b2ff'
+        },
+        
+        '& .griddle-body > div': {
+            // remove static scrollbar that is added
+            // by infinite scrolling
+            'overflow-y': 'auto !important'
+        },
+
         '& .table': {
             // disable selection (for batch selection with shift)
             'user-select': 'none',
             'border': '1px solid lightgray',
+
+            // rewrite bootstrap
+            'margin-bottom': '0',
 
             '& th, & td': {
                 'border-right': '1px solid lightgray'
@@ -32,6 +45,10 @@ import {alphabetSorter} from './sorters';
                         cursor: 'pointer'
                     } 
                 }
+            },
+            '& tbody + tbody': {
+                // griddle somewhy renders two tbody
+                display: 'none'
             },
             '& tbody': {
                 '& tr': {
