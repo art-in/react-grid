@@ -604,32 +604,48 @@ export default class DataTable extends React.Component {
             delete this.state.activeRowData;
             
             let $tableNode = $(ReactDOM.findDOMNode(this.refs.table));
-            let $scrollerNode = $tableNode.find('.griddle-body > div');
-            let $rowNode = $tableNode.find('.data-row.active-row');
-            
-            if ($rowNode.length === 0) {
-                throw Error('Active row node not found');
+            let $scrollerNode;
+
+            let rowHeight;
+            let rowOffsetTop;
+
+            if (this.props.optimization) {
+                // optimization means that rows outside visible 
+                // scroll frame will not be rendered in DOM, but
+                // it requires row height to be specified. So we can
+                // calculate row position basing on that.
+                let rowIdx = this.state.pageData.indexOf(activeRowData);
+                let $headerNode = $tableNode.find('table > thead');
+                $scrollerNode = $tableNode.find('.griddle-body > div');
+                rowHeight = this.props.optimization.rowHeight;
+                rowOffsetTop = rowIdx * rowHeight + $headerNode.height();
+            } else {
+                // otherwise active row should be rendered
+                let $rowNode = $tableNode.find('.active-row');
+                $scrollerNode = $(ReactDOM.findDOMNode(this.refs.wrapper));
+                rowHeight = $rowNode.height();
+                rowOffsetTop = $rowNode.position().top;
             }
-
-            // row offset relative to wrapper (without scroller scroll)
-            let rowOffsetTop = $rowNode.position().top;
-
-            // scroller scroll from top
-            let scrollerScrollTop = $scrollerNode.scrollTop();
-
-            let rowHeight = $rowNode.height();
+            
+            // scroll from table top
+            let scrollTop = $scrollerNode.scrollTop();
             let scrollerHeight = $scrollerNode.height();
 
-            if (rowOffsetTop < scrollerScrollTop) {
+            // padding from top and bottom borders of scroll frame
+            // for active row (so you always see next row when navigating
+            // with arrow keys)
+            let padding = 20;
+
+            if (rowOffsetTop < (scrollTop + padding)) {
                 // row is above the scroll frame
-                $scrollerNode.scrollTop(rowOffsetTop);
+                $scrollerNode.scrollTop(rowOffsetTop - padding);
             } else {
                 let diff = (rowOffsetTop + rowHeight) - 
-                    (scrollerScrollTop + scrollerHeight);
+                    (scrollTop + scrollerHeight) + padding;
 
                 if (diff > 0) {
                     // row is below the scroll frame
-                    $scrollerNode.scrollTop(scrollerScrollTop + diff);
+                    $scrollerNode.scrollTop(scrollTop + diff);
                 }
             }
         }

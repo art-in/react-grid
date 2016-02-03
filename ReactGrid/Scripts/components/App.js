@@ -6,12 +6,11 @@ import ItemList from './ItemList';
 
 @css({
     main: {
-        border: '1px solid green',
+        border: '1px solid lightgray',
         width: '900px',
-        margin: '0 auto'
+        margin: '10px auto'
     },
-    itemlist: {
-    }
+    itemlist: {}
 })
 export default class App extends React.Component {
 
