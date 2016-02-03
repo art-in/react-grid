@@ -12,7 +12,7 @@ namespace ReactGrid.Controllers.api
         {
             var items = new List<Item>();
 
-            for (var i = 17; i != 0; i--) {
+            for (var i = 700; i != 0; i--) {
                 items.Add(new Item()
                 {
                     Id = i,

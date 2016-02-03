@@ -42,13 +42,6 @@ export default class SelectColumn extends React.Component {
         }
     };
 
-    shouldComponentUpdate(nextProps) {
-        return nextProps.data !== this.props.data ||
-            nextProps.rowData.editing !== this.props.rowData.editing ||
-            nextProps.metadata.columnName !== this.props.metadata.columnName ||
-            nextProps.metadata.editable !== this.props.metadata.editable;
-    }
-
     render() {
         let option = this.props.metadata.selectOptions
             .find(o => o.value === this.props.data);

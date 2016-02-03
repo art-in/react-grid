@@ -100,6 +100,12 @@ export default class DataTable extends React.Component {
         })).isRequired,
         paging: React.PropTypes.bool,
         noDataMessage: React.PropTypes.string,
+        batchSelect: React.PropTypes.bool,
+        keyProp: React.PropTypes.string,
+        optimization: React.PropTypes.shape({
+            height: React.PropTypes.number.isRequired,
+            rowHeight: React.PropTypes.number.isRequired
+        }),
         onContextMenu: React.PropTypes.func.isRequired,
         onRowSelected: React.PropTypes.func.isRequired,
         onAllRowsSelected: React.PropTypes.func.isRequired,
@@ -112,7 +118,9 @@ export default class DataTable extends React.Component {
     static defaultProps = {
         paging: true,
         noDataMessage: 'No data to display',
-        batchSelect: true
+        batchSelect: true,
+        keyProp: 'Id',
+        optimization: null
     };
 
     state = {
@@ -578,39 +586,33 @@ export default class DataTable extends React.Component {
         if (activeRowData) {
             delete this.state.activeRowData;
             
-            let rowIdx = this.props.data.indexOf(activeRowData);
-            
-            if (rowIdx === -1) {
-                throw Error('Undable to find active row');
-            }    
-        
-            let $wrapperNode = $(ReactDOM.findDOMNode(this.refs.wrapper));
             let $tableNode = $(ReactDOM.findDOMNode(this.refs.table));
-            let $rowNode = $tableNode.find('.data-row').eq(rowIdx);
+            let $scrollerNode = $tableNode.find('.griddle-body > div');
+            let $rowNode = $tableNode.find('.data-row.active-row');
             
             if ($rowNode.length === 0) {
                 throw Error('Active row node not found');
             }
 
-            // row offset relative to wrapper (without wrapper scroll)
+            // row offset relative to wrapper (without scroller scroll)
             let rowOffsetTop = $rowNode.position().top;
 
-            // wrapper scroll from top
-            let wrapperScrollTop = $wrapperNode.scrollTop();
+            // scroller scroll from top
+            let scrollerScrollTop = $scrollerNode.scrollTop();
 
             let rowHeight = $rowNode.height();
-            let wrapperHeight = $wrapperNode.height();
+            let scrollerHeight = $scrollerNode.height();
 
-            if (rowOffsetTop < wrapperScrollTop) {
+            if (rowOffsetTop < scrollerScrollTop) {
                 // row is above the scroll frame
-                $wrapperNode.scrollTop(rowOffsetTop);
+                $scrollerNode.scrollTop(rowOffsetTop);
             } else {
                 let diff = (rowOffsetTop + rowHeight) - 
-                    (wrapperScrollTop + wrapperHeight);
+                    (scrollerScrollTop + scrollerHeight);
 
                 if (diff > 0) {
                     // row is below the scroll frame
-                    $wrapperNode.scrollTop(wrapperScrollTop + diff);
+                    $scrollerNode.scrollTop(scrollerScrollTop + diff);
                 }
             }
         }
@@ -618,10 +620,12 @@ export default class DataTable extends React.Component {
         // focus first input in editing row
         let editingRowData = this.props.data.find(r => r.editing);
         if (editingRowData) {
-            let rowIdx = this.props.data.indexOf(editingRowData);
-
             let $tableNode = $(ReactDOM.findDOMNode(this.refs.table));
-            let $rowNode = $tableNode.find('.data-row').eq(rowIdx);
+            let $rowNode = $tableNode.find('.data-row.editing');
+
+            if ($rowNode.length === 0) {
+                throw Error('Editing row node not found');
+            }
 
             $rowNode.find('input:first').focus().select();
         }
@@ -711,11 +715,27 @@ export default class DataTable extends React.Component {
             bodyCssClassName: rowData => {
                 let stardart = 'data-row';
                 return cx(
-                    stardart, 
+                    stardart,
                     {['selected']: rowData.selected},
-                    {['editing']: rowData.editing});
-            }
+                    {['editing']: rowData.editing},
+                    {['active-row']: rowData === this.state.activeRowData});
+            },
+            // row data property that will be used for key'ing 
+            // react row components while rendering
+            key: this.props.keyProp
         };
+
+        let optimizationProps = {};
+        if (this.props.optimization) {
+            // internal griddle render optimization
+            // by rendering only rows in visible area
+            optimizationProps = {
+                enableInfiniteScroll: true,
+                bodyHeight: this.props.optimization.height,
+                rowHeight: this.props.optimization.rowHeight,
+                paddingHeight: 0
+            };
+        }
 
         return (
             <div ref='wrapper' tabIndex={0}
@@ -737,6 +757,10 @@ export default class DataTable extends React.Component {
                          showPager={this.props.paging}
                          noDataMessage={this.props.noDataMessage}
                          
+                         {...optimizationProps}
+                         
+                         // use external datasource for manual
+                         // handling of all aspects of paging/sorting/etc.
                          useExternal={true}
                          externalChangeSort={this.onChangeSort}
                          externalSetPage={this.onSetPage}

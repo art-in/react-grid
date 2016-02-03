@@ -11,8 +11,6 @@ import ItemList from './ItemList';
         margin: '0 auto'
     },
     itemlist: {
-        'max-height': '300px',
-        'overflow-y': 'auto'
     }
 })
 export default class App extends React.Component {
