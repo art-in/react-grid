@@ -18,7 +18,7 @@ import {alphabetSorter} from './sorters';
         },
         
         '&:not(:focus) .table tbody tr:not(.editing).selected': {
-            // easy row selection color on blur
+            // fade row selection color when focus out
             'background-color': '#669ADA'
         },
 
@@ -128,7 +128,11 @@ export default class DataTable extends React.Component {
         batchSelect: React.PropTypes.bool,
         keyProp: React.PropTypes.string,
         optimization: React.PropTypes.shape({
-            height: React.PropTypes.number.isRequired,
+            height: React.PropTypes.shape({
+                absolute: React.PropTypes.number,
+                // window relative (0-1)
+                relative: React.PropTypes.number
+            }).isRequired,
             rowHeight: React.PropTypes.number.isRequired
         }),
         deselectRowsOnBlur: React.PropTypes.bool,
@@ -221,12 +225,19 @@ export default class DataTable extends React.Component {
         if (editingRows.length > 1) {
             console.warn('More than one row is in editing state');
         }
-
+        
         // preserve prev state of edited row
         let editingRowData = props.data.find(r => r.editing);
         if (editingRowData && !this.state.editingRowPrevData) {
             this.state.editingRowPrevData = 
                 this.clone(editingRowData);
+        }
+
+        // check height
+        if (props.optimization && 
+            props.optimization.height.relative && 
+            props.optimization.height.absolute) {
+            console.warn('Both relative and absolute height specified');
         }
 
         this.updatePageData(
@@ -239,17 +250,31 @@ export default class DataTable extends React.Component {
             this.state.pageSize);
     }
 
+    getOptimizationHeight() {
+        let height;
+        let heightProps = this.props.optimization.height;
+        if (heightProps.absolute) {
+            height = heightProps.absolute;
+        } else if (heightProps.relative) {
+            height = $(window).height() * heightProps.relative;
+        }
+
+        return height;
+    }
+
     componentDidMount() {
-        document.addEventListener('selectstart', this.onSelectStart);
+        document.addEventListener('selectstart', this.onDocumentSelectStart);
+        window.addEventListener('resize', this.onWindowResize);
         this.isComponentMounted = true;
     }
 
     componentWillUnmount() {
-        document.removeEventListener('selectstart', this.onSelectStart);
+        document.removeEventListener('selectstart', this.onDocumentSelectStart);
+        window.removeEventListener('resize', this.onWindowResize);
         this.isComponentMounted = false;
     }
 
-    onSelectStart = e => {
+    onDocumentSelectStart = e => {
         let $wrapper = $(ReactDOM.findDOMNode(this.refs.wrapper));
         let $selectedElement = $(e.target);
 
@@ -259,6 +284,13 @@ export default class DataTable extends React.Component {
         if ($wrapper.has($selectedElement).length &&
             !$selectedElement.is('input, select')) {
             e.preventDefault();
+        }
+    };
+
+    onWindowResize = () => {
+        if (this.props.optimization.height.relative) {
+            // update relative height
+            this.forceUpdate();
         }
     };
 
@@ -782,7 +814,7 @@ export default class DataTable extends React.Component {
             // by rendering only rows in visible area
             optimizationProps = {
                 enableInfiniteScroll: true,
-                bodyHeight: this.props.optimization.height,
+                bodyHeight: this.getOptimizationHeight(),
                 rowHeight: this.props.optimization.rowHeight,
                 paddingHeight: 0
             };
