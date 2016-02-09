@@ -288,7 +288,8 @@ export default class DataTable extends React.Component {
     };
 
     onWindowResize = () => {
-        if (this.props.optimization.height.relative) {
+        if (this.props.optimization &&
+            this.props.optimization.height.relative) {
             // update relative height
             this.forceUpdate();
         }
