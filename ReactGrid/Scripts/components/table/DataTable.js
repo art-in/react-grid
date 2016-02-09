@@ -17,9 +17,14 @@ import {alphabetSorter} from './sorters';
             outline: '2px solid #84b2ff'
         },
         
+        '&:not(:focus) .table tbody tr:not(.editing).selected': {
+            // easy row selection color on blur
+            'background-color': '#669ADA'
+        },
+
         '& .griddle-body > div': {
             // remove static scrollbar that is added
-            // by infinite scrolling
+            // by griddle infinite scrolling
             'overflow-y': 'auto !important'
         },
 
@@ -105,7 +110,10 @@ import {alphabetSorter} from './sorters';
 export default class DataTable extends React.Component {
 
     static propTypes = {
-        data: React.PropTypes.arrayOf(React.PropTypes.object).isRequired,
+        data: React.PropTypes.arrayOf(React.PropTypes.shape({
+            selected: React.PropTypes.bool,
+            active: React.PropTypes.bool
+        })).isRequired,
         columns: React.PropTypes.arrayOf(React.PropTypes.shape({
             columnName: React.PropTypes.string.isRequired,
             cssClassName: React.PropTypes.string,
@@ -123,6 +131,7 @@ export default class DataTable extends React.Component {
             height: React.PropTypes.number.isRequired,
             rowHeight: React.PropTypes.number.isRequired
         }),
+        deselectRowsOnBlur: React.PropTypes.bool,
         onContextMenu: React.PropTypes.func.isRequired,
         onRowSelected: React.PropTypes.func.isRequired,
         onAllRowsSelected: React.PropTypes.func.isRequired,
@@ -137,7 +146,8 @@ export default class DataTable extends React.Component {
         noDataMessage: 'No data to display',
         batchSelect: true,
         keyProp: 'Id',
-        optimization: null
+        optimization: null,
+        deselectRowsOnBlur: true
     };
 
     state = {
@@ -740,7 +750,9 @@ export default class DataTable extends React.Component {
                 // blur
                 this.onDiscardChanges();
 
-                this.props.data.forEach(r => delete r.selected);
+                if (this.props.deselectRowsOnBlur) {
+                    this.props.data.forEach(r => delete r.selected);
+                }
                 this.props.data.forEach(r => delete r.editing);
 
                 this.props.onBlur();

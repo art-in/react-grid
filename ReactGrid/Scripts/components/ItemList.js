@@ -130,6 +130,7 @@ export default class ItemList extends React.Component {
                 className={cx(this.classes.list, this.props.className)}
                 paging={false}
                 optimization={{height: 400, rowHeight: 24}}
+                deselectRowsOnBlur={false}
                 onContextMenu={this.onTableContextMenu}                
                 onRowSelected={this.hideContextMenu}
                 onAllRowsDeselected={this.hideContextMenu}
