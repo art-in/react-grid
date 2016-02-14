@@ -13,11 +13,15 @@ export default class SelectColumn extends React.Component {
         metadata: React.PropTypes.shape({
             columnName: React.PropTypes.string.isRequired,
             editable: React.PropTypes.bool,
-            selectOptions: React.PropTypes.arrayOf(
-                React.PropTypes.shape({
-                    value: React.PropTypes.number.isRequired,
-                    displayValue: React.PropTypes.string.isRequired
-                })).isRequired
+            selectOptions: React.PropTypes.oneOfType([
+                React.PropTypes.arrayOf(
+                    React.PropTypes.shape({
+                        value: React.PropTypes.number.isRequired,
+                        displayValue: React.PropTypes.string.isRequired
+                    })),
+                React.PropTypes.func
+            ]).isRequired,
+            onSelectChange: React.PropTypes.func
         }).isRequired
     };
 
@@ -28,6 +32,12 @@ export default class SelectColumn extends React.Component {
 
     onChange = () => {
         this.save();
+
+        let {onSelectChange} = this.props.metadata;
+
+        if (onSelectChange) {
+            onSelectChange(this.props.rowData);
+        }
     };
 
     onClick = e => {
@@ -43,12 +53,19 @@ export default class SelectColumn extends React.Component {
     };
 
     render() {
-        let option = this.props.metadata.selectOptions
+        let {selectOptions, columnName} = this.props.metadata;
+
+        if (typeof selectOptions === 'function') {
+            selectOptions = selectOptions(this.props.rowData);
+        }
+
+        let option = selectOptions
             .find(o => o.value === this.props.data);
 
         if (!option) {
             throw Error(
-                `Select option with value '${this.props.data}' was not found`);
+                `Select option with value '${this.props.data}' ` +
+                `for column '${columnName}' was not found`);
         }
 
         return (
@@ -62,7 +79,7 @@ export default class SelectColumn extends React.Component {
                         onChange={this.onChange}
                         onKeyDown={this.onKeyDown}>
 
-                        {this.props.metadata.selectOptions.map(o =>
+                        {selectOptions.map(o =>
                             <option value={o.value} key={o.value}>
                                 {o.displayValue}
                             </option>)}

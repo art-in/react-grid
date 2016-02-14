@@ -12,7 +12,10 @@ export default class TextColumn extends React.Component {
         ]),
         metadata: React.PropTypes.shape({
             columnName: React.PropTypes.string.isRequired,
-            editable: React.PropTypes.bool,
+            editable: React.PropTypes.oneOfType([
+                React.PropTypes.bool,
+                React.PropTypes.func
+            ]),
             getTooltip: React.PropTypes.func
         }).isRequired
     };
@@ -31,13 +34,17 @@ export default class TextColumn extends React.Component {
     };
 
     render() {
-        let {getTooltip} = this.props.metadata;
+        let {getTooltip, editable} = this.props.metadata;
         let title = getTooltip && getTooltip(this.props.rowData);
         
+        if (this.props.rowData.editing &&
+            typeof editable === 'function') {
+            editable = editable(this.props.rowData);
+        }
+
         return (
             <div title={title}>
-                {this.props.metadata.editable && 
-                    this.props.rowData.editing ?
+                {editable && this.props.rowData.editing ?
 
                     <input ref='input'
                         type='text'
