@@ -12,7 +12,10 @@ export default class NumberColumn extends React.Component {
         ]),
         metadata: React.PropTypes.shape({
             columnName: React.PropTypes.string.isRequired,
-            editable: React.PropTypes.bool,
+            editable: React.PropTypes.oneOfType([
+                React.PropTypes.bool,
+                React.PropTypes.func
+            ]),
             min: React.PropTypes.number.isRequired,
             max: React.PropTypes.number
         }).isRequired
@@ -40,10 +43,17 @@ export default class NumberColumn extends React.Component {
     };
 
     render() {
+        let {editable} = this.props.metadata;
+
+        // editable flag
+        if (this.props.rowData.editing &&
+            typeof editable === 'function') {
+            editable = editable(this.props.rowData);
+        }
+
         return (
             <div>
-                {this.props.metadata.editable && 
-                    this.props.rowData.editing ?
+                {editable && this.props.rowData.editing ?
 
                     <input ref='input'
                         type='number'

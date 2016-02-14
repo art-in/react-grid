@@ -37,6 +37,7 @@ export default class TextColumn extends React.Component {
         let {getTooltip, editable} = this.props.metadata;
         let title = getTooltip && getTooltip(this.props.rowData);
         
+        // editable flag
         if (this.props.rowData.editing &&
             typeof editable === 'function') {
             editable = editable(this.props.rowData);

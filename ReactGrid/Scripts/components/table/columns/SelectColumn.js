@@ -12,7 +12,10 @@ export default class SelectColumn extends React.Component {
         ]),
         metadata: React.PropTypes.shape({
             columnName: React.PropTypes.string.isRequired,
-            editable: React.PropTypes.bool,
+            editable: React.PropTypes.oneOfType([
+                React.PropTypes.bool,
+                React.PropTypes.func
+            ]),
             selectOptions: React.PropTypes.oneOfType([
                 React.PropTypes.arrayOf(
                     React.PropTypes.shape({
@@ -53,8 +56,15 @@ export default class SelectColumn extends React.Component {
     };
 
     render() {
-        let {selectOptions, columnName} = this.props.metadata;
+        let {selectOptions, columnName, editable} = this.props.metadata;
 
+        // editable flag
+        if (this.props.rowData.editing &&
+            typeof editable === 'function') {
+            editable = editable(this.props.rowData);
+        }
+
+        // options
         if (typeof selectOptions === 'function') {
             selectOptions = selectOptions(this.props.rowData);
         }
@@ -70,8 +80,7 @@ export default class SelectColumn extends React.Component {
 
         return (
             <div>
-                {this.props.metadata.editable && 
-                    this.props.rowData.editing ?
+                {editable && this.props.rowData.editing ?
 
                     <select ref={'select'}
                         defaultValue={this.props.data}

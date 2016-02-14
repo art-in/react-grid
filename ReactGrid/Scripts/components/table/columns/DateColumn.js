@@ -15,7 +15,10 @@ export default class DateColumn extends React.Component {
         data: React.PropTypes.string,
         metadata: React.PropTypes.shape({
             columnName: React.PropTypes.string.isRequired,
-            editable: React.PropTypes.bool
+            editable: React.PropTypes.oneOfType([
+                React.PropTypes.bool,
+                React.PropTypes.func
+            ])
         }).isRequired
     };
 
@@ -42,6 +45,15 @@ export default class DateColumn extends React.Component {
     };
 
     render() {
+        let {editable} = this.props.metadata;
+
+        // editable flag
+        if (this.props.rowData.editing &&
+            typeof editable === 'function') {
+            editable = editable(this.props.rowData);
+        }
+
+        // parse date
         if (isNaN(Date.parse(this.props.data))) {
             console.error(`Invalid date string: '${this.props.data}'`);
         }
@@ -54,8 +66,7 @@ export default class DateColumn extends React.Component {
 
         return (
             <div className={this.classes.date}>
-                {this.props.metadata.editable && 
-                    this.props.rowData.editing ?
+                {editable && this.props.rowData.editing ?
 
                     <input ref='input'
                         // no support for datetime for now
