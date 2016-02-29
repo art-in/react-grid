@@ -10,6 +10,8 @@
    * [x] tab - navigate cells
    * [x] ctrl+a - select all
    * [x] esc - de-select all
+   * [x] del - delete rows
+   * [x] insert - add row
  - [x] cell formatting/editing
    * [x] text
    * [x] number
