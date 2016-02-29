@@ -112,6 +112,8 @@ export default class DataTable extends React.Component {
     static propTypes = {
         data: React.PropTypes.arrayOf(React.PropTypes.shape({
             selected: React.PropTypes.bool,
+            editing: React.PropTypes.bool,
+            ['new']: React.PropTypes.bool,
             active: React.PropTypes.bool
         })).isRequired,
         columns: React.PropTypes.arrayOf(React.PropTypes.shape({
@@ -142,7 +144,9 @@ export default class DataTable extends React.Component {
         onAllRowsDeselected: React.PropTypes.func.isRequired,
         onBlur: React.PropTypes.func.isRequired,
         onRowEditing: React.PropTypes.func,
-        onRowEdit: React.PropTypes.func
+        onRowEdit: React.PropTypes.func,
+        onRowAdding: React.PropTypes.func,
+        onRowsDeleting: React.PropTypes.func
     };
 
     static defaultProps = {
@@ -151,7 +155,11 @@ export default class DataTable extends React.Component {
         batchSelect: true,
         keyProp: 'Id',
         optimization: null,
-        deselectRowsOnBlur: true
+        deselectRowsOnBlur: true,
+        onRowEditing() {},
+        onRowEdit() {},
+        onRowAdding() {},
+        onRowsDeleting() {}
     };
 
     state = {
@@ -497,7 +505,7 @@ export default class DataTable extends React.Component {
     };
 
     onKeyDown = e => {
-         
+
         switch (e.keyCode) {
         case 13:
             // enter
@@ -567,6 +575,15 @@ export default class DataTable extends React.Component {
             this.moveNextRow(true, e.shiftKey && this.props.batchSelect);
             e.preventDefault();
             break;
+        case 45:
+            // insert
+            this.props.onRowAdding();
+            break;
+        case 46:
+            // delete
+            let selectedRows = this.props.data.filter(r => r.selected);
+            this.props.onRowsDeleting(selectedRows);
+            break;
         case 65:
             // ctrl+a
             if (e.ctrlKey && this.props.batchSelect) {
@@ -588,6 +605,11 @@ export default class DataTable extends React.Component {
     moveNextRow(down, batch) {
         let {data} = this.props;
         let {pageData} = this.state;
+
+        if (!pageData.length) {
+            // no rows to select
+            return;
+        }
 
         // get selected row index
         let selectedIdx;

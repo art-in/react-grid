@@ -1,4 +1,5 @@
 ﻿import React from 'react';
+import moment from 'moment';
 import {css} from '../../../helpers/react-helpers';
 
 @css({
@@ -54,16 +55,20 @@ export default class DateColumn extends React.Component {
         }
 
         // parse date
-        if (isNaN(Date.parse(this.props.data))) {
+        let date = moment(this.props.data);
+
+        if (!date.isValid()) {
             console.error(`Invalid date string: '${this.props.data}'`);
         }
 
-        let date = new Date(this.props.data);
-
-        let dateString = date.toISOString().match(/(.*)T/)[1];
-        let dateTimeString = 
-            `${date.toLocaleDateString()} ${date.toLocaleTimeString()}`;
-
+        // localize without shifting time zome (as Date would do)
+        // e.g. input date string is '2016-02-16T11:51:17.607'
+        // Date() will parse it as UTC in 0 tz, then localization will
+        // add several hours. this will secure formatting only.
+        // e.g. format result is '02/16/2016, 11:51:17 PM'
+        let dateTimeString = date.format('L, LTS');
+        let dateString = date.format('YYYY-MM-DD');
+        
         return (
             <div className={this.classes.date}>
                 {editable && this.props.rowData.editing ?
