@@ -138,6 +138,8 @@ export default class DataTable extends React.Component {
             rowHeight: React.PropTypes.number.isRequired
         }),
         deselectRowsOnBlur: React.PropTypes.bool,
+        filter: React.PropTypes.string,
+        showFilter: React.PropTypes.bool,
         onContextMenu: React.PropTypes.func.isRequired,
         onRowSelected: React.PropTypes.func.isRequired,
         onAllRowsSelected: React.PropTypes.func.isRequired,
@@ -156,6 +158,8 @@ export default class DataTable extends React.Component {
         keyProp: 'Id',
         optimization: null,
         deselectRowsOnBlur: true,
+        filter: null,
+        showFilter: false,
         onRowEditing() {},
         onRowEdit() {},
         onRowAdding() {},
@@ -172,6 +176,7 @@ export default class DataTable extends React.Component {
         pagesCount: 0,
         sortColumnName: null,
         sortAscending: true,
+        filter: null,
 
         // currently selected row
         activeRowData: null,
@@ -227,7 +232,10 @@ export default class DataTable extends React.Component {
                 sortColumnName = columnData.columnName;
             }
         }
-                
+        
+        // filter
+        this.state.filter = props.filter;
+        
         // check editing rows count
         let editingRows = props.data.filter(r => r.editing);
         if (editingRows.length > 1) {
@@ -251,7 +259,7 @@ export default class DataTable extends React.Component {
         this.updatePageData(
             props.data,
             this.state.columnMetadata,
-            null,
+            this.state.filter,
             sortColumnName,
             this.state.sortAscending,
             this.state.pageCurrent,
@@ -307,20 +315,37 @@ export default class DataTable extends React.Component {
      * Applies sorting and paging for the data.
      * @param {array} data - the data
      * @param {array} columnsMetadata - meta in griddle format
-     * @param {string} filterString - for filtering
+     * @param {string} filter - for filtering
      * @param {string} sortColumn - for sorting
      * @param {bool} sortAscending - for sorting
      * @param {number} pageCurrent - current page number
      * @param {number} pageSize - max rows count on page
      */
     updatePageData(
-        data, columnsMetadata, filterString, 
-        sortColumn, sortAscending, 
+        data, columnsMetadata, filter, 
+        sortColumn, sortAscending,
         pageCurrent, pageSize) {
 
         // filter
-        if (filterString) {
-            throw Error('Filtering not implemented');
+        if (filter) {
+            // case insensitive
+            // shallow
+            let filterLowCase = filter.toLowerCase();
+            data = data.filter(rowData => {
+                let keys = Object.keys(rowData);
+                let includes = keys.some(key => 
+                    rowData[key]
+                        .toString()
+                        .toLowerCase()
+                        .includes(filterLowCase));
+
+                if (!includes) {
+                    // de-select filtered rows
+                    delete rowData.selected;
+                }
+
+                return includes;
+            });
         }
 
         // sort
@@ -364,7 +389,8 @@ export default class DataTable extends React.Component {
             pageSize: pageSize,
             pagesCount: pagesCount,
             sortColumnName: sortColumn,
-            sortAscending: sortAscending
+            sortAscending: sortAscending,
+            filter: filter
         });
     }
 
@@ -465,7 +491,7 @@ export default class DataTable extends React.Component {
         this.updatePageData(
             this.props.data,
             this.state.columnMetadata,
-            null,
+            this.state.filter,
             this.state.sortColumnName,
             this.state.sortAscending,
             pageNumber,
@@ -482,7 +508,7 @@ export default class DataTable extends React.Component {
         this.updatePageData(
             this.props.data,
             this.state.columnMetadata,
-            null,
+            this.state.filter,
             sort,
             sortAscending,
             pageCurrent,
@@ -490,14 +516,26 @@ export default class DataTable extends React.Component {
     };
 
     onSetFilter = filter => {
-        throw Error(`Filtering not implemented: ${filter}`);
+        if (this.props.filter) {
+            console.warn('Filter already set through props');
+            return;
+        }
+
+        this.updatePageData(
+            this.props.data,
+            this.state.columnMetadata,
+            filter,
+            this.state.sortColumnName,
+            this.state.sortAscending,
+            this.state.pageCurrent,
+            this.state.pageSize);
     };
 
     onSetPageSize = size => {
         this.updatePageData(
             this.props.data,
             this.state.columnMetadata,
-            null,
+            this.state.filter,
             this.state.sortColumnName,
             this.state.sortAscending,
             this.state.pageCurrent,
@@ -750,7 +788,7 @@ export default class DataTable extends React.Component {
             this.updatePageData(
                 this.props.data,
                 this.state.columnMetadata,
-                null,
+                this.state.filter,
                 this.state.sortColumnName,
                 this.state.sortAscending,
                 this.state.pageCurrent,
@@ -858,7 +896,7 @@ export default class DataTable extends React.Component {
                          useGriddleStyles={false}
                          onRowClick={this.onRowClick}
                          rowMetadata={rowMetadata}
-                         showFilter={false}
+                         showFilter={this.props.showFilter}
                          showSettings={false}
                          showPager={this.props.paging}
                          noDataMessage={this.props.noDataMessage}

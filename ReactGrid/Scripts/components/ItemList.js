@@ -13,7 +13,12 @@ import SelectColumn from './table/columns/SelectColumn';
 import DateColumn from './table/columns/DateColumn';
 
 @css({
-    list: {}
+    list: {
+        '& .filter': {
+            width: '100%',
+            padding: '0 5px'
+        }
+    }
 })
 export default class ItemList extends React.Component {
 
@@ -25,6 +30,7 @@ export default class ItemList extends React.Component {
     };
 
     state = {
+        filter: null,
         contextMenu: {
             shown: false,
             pos: {
@@ -89,6 +95,11 @@ export default class ItemList extends React.Component {
         this.props.onItemEdit(item);
     };
 
+    onFilterChange = e => {
+        this.state.filter = e.target.value;
+        this.forceUpdate();
+    };
+
     render() {
         let {contextMenu} = this.state;
 
@@ -100,71 +111,76 @@ export default class ItemList extends React.Component {
             () => this.onContextMenuAction(actionName);
 
         return (
-            <DataTable data={this.props.items}
-                columns={[{
-                    columnName: 'Id',
-                    cssClassName: 'col-md-3',
-                    sorter: numericSorter,
-                    initialSort: true,
-                    customComponent: NumberColumn,
-                    min: 0,
-                    editable: true
-                }, {
-                    columnName: 'Name',
-                    cssClassName: 'col-md-3',
-                    customComponent: TextColumn,
-                    editable: true
-                }, {
-                    columnName: 'Type',
-                    cssClassName: 'col-md-3',
-                    sorter: numericSorter,
-                    customComponent: SelectColumn,
-                    selectOptions: itemTypeOptions,
-                    editable: true
-                }, {
-                    columnName: 'CreatedDate',
-                    cssClassName: 'col-md-3',
-                    customComponent: DateColumn,
-                    editable: true
-                }]}
-                className={cx(this.classes.list, this.props.className)}
-                paging={false}
-                optimization={{height: {relative: 0.8}, rowHeight: 24}}
-                deselectRowsOnBlur={false}
-                onContextMenu={this.onTableContextMenu}                
-                onRowSelected={this.hideContextMenu}
-                onAllRowsDeselected={this.hideContextMenu}
-                onAllRowsSelected={this.hideContextMenu}
-                onBlur={this.hideContextMenu}
-                onRowEditing={this.onTableRowEditing}
-                onRowEdit={this.onTableRowEdit}>
+            <section className={cx(this.classes.list, this.props.className)}>
+                <input className='filter' placeholder='filter...'
+                    value={this.state.filter}
+                    onChange={this.onFilterChange}/>
+                <DataTable data={this.props.items}
+                    columns={[{
+                        columnName: 'Id',
+                        cssClassName: 'col-md-3',
+                        sorter: numericSorter,
+                        initialSort: true,
+                        customComponent: NumberColumn,
+                        min: 0,
+                        editable: true
+                    }, {
+                        columnName: 'Name',
+                        cssClassName: 'col-md-3',
+                        customComponent: TextColumn,
+                        editable: true
+                    }, {
+                        columnName: 'Type',
+                        cssClassName: 'col-md-3',
+                        sorter: numericSorter,
+                        customComponent: SelectColumn,
+                        selectOptions: itemTypeOptions,
+                        editable: true
+                    }, {
+                        columnName: 'CreatedDate',
+                        cssClassName: 'col-md-3',
+                        customComponent: DateColumn,
+                        editable: true
+                    }]}
+                    paging={false}
+                    optimization={{height: {relative: 0.8}, rowHeight: 24}}
+                    deselectRowsOnBlur={false}
+                    filter={this.state.filter}
+                    onContextMenu={this.onTableContextMenu}                
+                    onRowSelected={this.hideContextMenu}
+                    onAllRowsDeselected={this.hideContextMenu}
+                    onAllRowsSelected={this.hideContextMenu}
+                    onBlur={this.hideContextMenu}
+                    onRowEditing={this.onTableRowEditing}
+                    onRowEdit={this.onTableRowEdit}>
                 
-                {contextMenu.shown &&
-                        <ContextMenu ref='contextMenu'
-                        pos={contextMenu.pos}
-                        menuItems={ 
-                        contextMenu.targetItems.length > 1 ?
-                            [{
-                                title: 'multiple item selected',
-                                onClick: menuAction('MultAction')
-                            }, {
-                                title: 'delete',
-                                onClick: menuAction('Delete')
-                            }] :
-                            [{
-                                title: 'single item selected',
-                                onClick: menuAction('SingAction')
-                            }, {
-                                title: 'edit',
-                                onClick: menuAction('Edit')
-                            }, {
-                                title: 'delete',
-                                onClick: menuAction('Delete')
-                            }]
-                        }/>
-                }
+                    {contextMenu.shown &&
+                            <ContextMenu ref='contextMenu'
+                            pos={contextMenu.pos}
+                            menuItems={ 
+                            contextMenu.targetItems.length > 1 ?
+                                [{
+                                    title: 'multiple item selected',
+                                    onClick: menuAction('MultAction')
+                                }, {
+                                    title: 'delete',
+                                    onClick: menuAction('Delete')
+                                }] :
+                                [{
+                                    title: 'single item selected',
+                                    onClick: menuAction('SingAction')
+                                }, {
+                                    title: 'edit',
+                                    onClick: menuAction('Edit')
+                                }, {
+                                    title: 'delete',
+                                    onClick: menuAction('Delete')
+                                }]
+                            }/>
+                    }
 
-            </DataTable>
+                </DataTable>
+            </section>
         );
     }
 }

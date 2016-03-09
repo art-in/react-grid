@@ -42,6 +42,7 @@
     "jss-vendor-prefixer": "^1.0.1",
     "less": "^2.5.3",
     "less-loader": "^2.2.2",
+    "moment": "^2.12.0",
     "react": "^0.14.6",
     "react-dom": "^0.14.6",
     "react-jss": "^2.0.1",
