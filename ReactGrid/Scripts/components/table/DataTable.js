@@ -333,11 +333,13 @@ export default class DataTable extends React.Component {
             let filterLowCase = filter.toLowerCase();
             data = data.filter(rowData => {
                 let keys = Object.keys(rowData);
-                let includes = keys.some(key => 
-                    rowData[key]
+                let includes = keys.some(key => {
+                    let prop = rowData[key];
+                    return prop && prop
                         .toString()
                         .toLowerCase()
-                        .includes(filterLowCase));
+                        .includes(filterLowCase);
+                });
 
                 if (!includes) {
                     // de-select filtered rows
