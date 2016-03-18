@@ -546,6 +546,8 @@ export default class DataTable extends React.Component {
 
     onKeyDown = e => {
 
+        let hasEditingRows = this.props.data.some(r => r.editing);
+
         switch (e.keyCode) {
         case 13:
             // enter
@@ -616,13 +618,23 @@ export default class DataTable extends React.Component {
             e.preventDefault();
             break;
         case 45:
+        case 107:
             // insert
-            this.props.onRowAdding();
+            // add
+            if (!hasEditingRows) {
+                this.props.onRowAdding();
+                e.preventDefault();
+            }
             break;
         case 46:
+        case 109:
             // delete
-            let selectedRows = this.props.data.filter(r => r.selected);
-            this.props.onRowsDeleting(selectedRows);
+            // subtract
+            if (!hasEditingRows) {
+                let selectedRows = this.props.data.filter(r => r.selected);
+                this.props.onRowsDeleting(selectedRows);
+                e.preventDefault();
+            }
             break;
         case 65:
             // ctrl+a
