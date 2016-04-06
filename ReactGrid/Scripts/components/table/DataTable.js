@@ -182,7 +182,10 @@ export default class DataTable extends React.Component {
         activeRowData: null,
         
         // prev data of currently beeing edited row
-        editingRowPrevData: null
+        editingRowPrevData: null,
+
+        // dom element of cell to focus on edit
+        editingRowCell: null
     };
 
     isComponentMounted = false;
@@ -403,7 +406,7 @@ export default class DataTable extends React.Component {
 
         let row = rowComponent.props.data;
 
-        let {contextMenu} = this.state;
+        let {contextMenu, doubleClick} = this.state;
         
         // context menu event
         if (contextMenu) {
@@ -419,7 +422,18 @@ export default class DataTable extends React.Component {
             let selectedRows = this.props.data.filter(row => row.selected);
             this.props.onContextMenu(contextMenu.pos, selectedRows);
 
-        // select rows
+        // double click event
+        } else if (doubleClick) {
+            delete this.state.doubleClick;
+
+            this.state.editingRowCell = doubleClick.target;
+
+            this.props.data.forEach(i => delete i.selected);
+            
+            row.selected = true;
+            row.editing = true;
+
+        // row select event
         } else {
             
             // batch
@@ -469,7 +483,7 @@ export default class DataTable extends React.Component {
 
     onContextMenu = e => {
 
-        // no header or footer click
+        // inside data row only (no header/footer)
         if (!$(e.target).closest('.data-row')[0]) {
             return;
         }
@@ -484,6 +498,25 @@ export default class DataTable extends React.Component {
 
         // HACK: pass event to react component
         // (no support for context menu event for table row from griddle)
+        $(e.target).trigger('click');
+
+        e.preventDefault();
+    };
+
+    onDoubleClick = e => {
+
+        // inside data row only (no header/footer)
+        if (!$(e.target).closest('.data-row')[0]) {
+            return;
+        }
+
+        // handle as double click
+        this.state.doubleClick = {
+            target: e.target
+        };
+
+        // HACK: pass event to react component
+        // (no support for double click event for table row from griddle)
         $(e.target).trigger('click');
 
         e.preventDefault();
@@ -652,7 +685,7 @@ export default class DataTable extends React.Component {
             // any other key
         }
 
-    };  
+    };
 
     moveNextRow(down, batch) {
         let {data} = this.props;
@@ -773,17 +806,34 @@ export default class DataTable extends React.Component {
             }
         }
 
-        // focus first input in editing row
+        // focus input in editing row
         let editingRowData = this.props.data.find(r => r.editing);
         if (editingRowData) {
             let $tableNode = $(ReactDOM.findDOMNode(this.refs.table));
-            let $rowNode = $tableNode.find('.data-row.editing');
+            let $editingRowNode = $tableNode.find('.data-row.editing');
 
-            if ($rowNode.length === 0) {
+            if ($editingRowNode.length === 0) {
                 throw Error('Editing row node not found');
             }
 
-            $rowNode.find('input:first').focus().select();
+            // only focus if no element already focused
+            // inside editing row
+            if (!$editingRowNode.find(':focus').length) {
+            
+                // focus input in editing row cell
+                let $editingRowCellInput = $editingRowNode
+                    .find(this.state.editingRowCell)
+                    .find('input, select');
+                
+                delete this.state.editingRowCell;
+
+                // or just first input in the row
+                let $inputToFocus = $editingRowCellInput.length ?
+                    $editingRowCellInput :
+                    $editingRowNode.find('input, select');
+
+                $inputToFocus.first().focus().select();
+            }
         }
     }
 
@@ -900,7 +950,8 @@ export default class DataTable extends React.Component {
                  className={cx(this.classes.wrapper, this.props.className)}
                  onBlur={this.onBlur}
                  onContextMenu={this.onContextMenu}
-                 onKeyDown={this.onKeyDown}>
+                 onKeyDown={this.onKeyDown}
+                 onDoubleClick={this.onDoubleClick}>
 
                 <Griddle ref={'table'}
                          results={this.state.pageData}
