@@ -399,6 +399,20 @@ export default class DataTable extends React.Component {
         });
     }
 
+    editRow(rowData) {
+        this.props.data.forEach(r => delete r.selected);
+        this.props.data.forEach(r => delete r.editing);
+
+        // preserve prev row data
+        this.state.editingRowPrevData = this.clone(rowData);
+                    
+        rowData.editing = true;
+        rowData.selected = true;
+
+        this.props.onAllRowsDeselected();
+        this.props.onRowEditing(rowData);    
+    }
+
     onRowClick = (rowComponent, e) => {
 
         this.onSaveChanges();
@@ -430,8 +444,8 @@ export default class DataTable extends React.Component {
 
             this.props.data.forEach(i => delete i.selected);
             
-            row.selected = true;
-            row.editing = true;
+            // make editable
+            this.editRow(row);
 
         // row select event
         } else {
@@ -592,17 +606,7 @@ export default class DataTable extends React.Component {
 
                 } else if (this.state.columnMetadata.some(c => c.editable)) {
                     // make editable
-                    this.props.data.forEach(r => delete r.selected);
-                    this.props.data.forEach(r => delete r.editing);
-
-                    // preserve prev row data
-                    this.state.editingRowPrevData = this.clone(selectedRowData);
-                    
-                    selectedRowData.editing = true;
-                    selectedRowData.selected = true;
-
-                    this.props.onAllRowsDeselected();
-                    this.props.onRowEditing(selectedRowData);
+                    this.editRow(selectedRowData);
                 }
 
                 this.forceUpdate(); 
