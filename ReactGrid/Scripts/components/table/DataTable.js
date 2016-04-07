@@ -838,6 +838,21 @@ export default class DataTable extends React.Component {
 
                 $inputToFocus.first().focus().select();
             }
+
+            // prevent tab/shift+tab focus out of the row
+            $editingRowNode.find('input, select').first()
+                .keydown(e => {
+                    if (e.keyCode === 9 && e.shiftKey) {
+                        e.preventDefault();
+                    }
+                });
+
+            $editingRowNode.find('input, select').last()
+                .keydown(e => {
+                    if (e.keyCode === 9 && !e.shiftKey) {
+                        e.preventDefault();
+                    }
+                });
         }
     }
 
