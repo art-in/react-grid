@@ -17,17 +17,54 @@ export default class NumberColumn extends React.Component {
                 React.PropTypes.func
             ]),
             min: React.PropTypes.number.isRequired,
-            max: React.PropTypes.number
+            max: React.PropTypes.number,
+            step: React.PropTypes.number
         }).isRequired
     };
 
-    save = () => {
-        let value = parseFloat(this.refs.input.value, 10);
+    state = {
+        value: ''
+    };
+
+    save = value => {
         this.props.rowData[this.props.metadata.columnName] = value;
     };
 
+    handleProps(props) {
+        this.setState({
+            value: props.data || ''
+        });
+    }
+    
+    componentWillMount() {
+        this.handleProps(this.props);
+    }
+
+    componentWillReceiveProps(nextProps) {
+        this.handleProps(nextProps);
+    }
+    
     onChange = () => {
-        this.save();
+        let inputValue = this.refs.input.value;
+        let value = parseFloat(inputValue, 10);
+
+        // allow entering dot in IE
+        if (inputValue[inputValue.length - 1] === '.') {
+            this.setState({value: inputValue});
+            this.save(value);
+        } else {
+
+            // prevent saving empty NaN in IE
+            if (inputValue === '') {
+                value = 0;
+            }
+
+            // prevent invalid input in FF and IE
+            if (!isNaN(value)) {
+                this.setState({value: inputValue});
+                this.save(value);
+            }
+        }
     };
 
     onClick = e => {
@@ -59,7 +96,8 @@ export default class NumberColumn extends React.Component {
                         type='number'
                         min={this.props.metadata.min}
                         max={this.props.metadata.max}
-                        defaultValue={this.props.data}
+                        step={this.props.metadata.step}
+                        value={this.state.value}
                         onClick={this.onClick}
                         onChange={this.onChange}
                         onKeyDown={this.onKeyDown} /> :

@@ -147,6 +147,7 @@ export default class DataTable extends React.Component {
         onBlur: React.PropTypes.func.isRequired,
         onRowEditing: React.PropTypes.func,
         onRowEdit: React.PropTypes.func,
+        onRowEditDiscard: React.PropTypes.func,
         onRowAdding: React.PropTypes.func,
         onRowsDeleting: React.PropTypes.func
     };
@@ -162,6 +163,7 @@ export default class DataTable extends React.Component {
         showFilter: false,
         onRowEditing() {},
         onRowEdit() {},
+        onRowEditDiscard() {},
         onRowAdding() {},
         onRowsDeleting() {}
     };
@@ -904,6 +906,8 @@ export default class DataTable extends React.Component {
             editingRow.editing = true;
 
             this.state.editingRowPrevData = null;
+
+            this.props.onRowEditDiscard();
         }
     };
 
