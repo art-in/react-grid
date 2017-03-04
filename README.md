@@ -1,6 +1,9 @@
 Implementing interactive grid in asp.net mvc + react environment.  
 Using [Griddle](https://github.com/GriddleGriddle/Griddle) as grid foundation.
 
+Supposed to be experimental playground for grid component to be later integrated into real project.  
+Not supposed to be reusable npm component (for now at least).
+
 Reqs:  
 - [x] display table
  - [x] style with bootstrap
