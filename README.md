@@ -1,4 +1,8 @@
- - [x] display table
+Implementing interactive grid in asp.net mvc + react environment.  
+Using [Griddle](https://github.com/GriddleGriddle/Griddle) as grid foundation.
+
+Reqs:  
+- [x] display table
  - [x] style with bootstrap
  - [x] rows selection
    * [x] one by one (+ ctrl)
